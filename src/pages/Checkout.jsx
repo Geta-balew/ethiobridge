@@ -34,7 +34,8 @@ export default function Checkout() {
   const [submitting, setSubmitting] = useState(false);
 
   const deliveryFee = subtotal > 0 ? 150 : 0;
-  const total = subtotal + deliveryFee;
+  const pickerFee = subtotal > 0 ? Math.max(500, Math.round(subtotal * 0.1)) : 0;
+  const total = subtotal + deliveryFee + pickerFee;
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -84,6 +85,7 @@ export default function Checkout() {
         })),
         subtotal,
         delivery_fee: deliveryFee,
+        picker_fee: pickerFee,
         total,
         buyer_name: form.buyer_name,
         buyer_phone: form.buyer_phone,
@@ -268,6 +270,7 @@ export default function Checkout() {
               <div className="space-y-2 text-sm">
                 <Row label="Subtotal" value={`${subtotal.toLocaleString()} ETB`} />
                 <Row label="Delivery fee" value={`${deliveryFee.toLocaleString()} ETB`} />
+                <Row label="Picker service fee" value={`${pickerFee.toLocaleString()} ETB`} />
                 <div className="my-2 border-t border-border" />
                 <Row label="Total" value={`${total.toLocaleString()} ETB`} bold />
               </div>

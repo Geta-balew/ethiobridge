@@ -35,6 +35,11 @@
       "title": "Delivery Fee (ETB)",
       "default": 0
     },
+    "picker_fee": {
+      "type": "number",
+      "title": "Picker Service Fee (ETB)",
+      "default": 0
+    },
     "total": {
       "type": "number",
       "title": "Total (ETB)"
@@ -108,7 +113,8 @@
         "pending",
         "paid",
         "failed",
-        "manual_pending"
+        "manual_pending",
+        "manual_confirmed"
       ],
       "default": "pending",
       "title": "Payment Status"
@@ -116,6 +122,23 @@
     "chapa_tx_ref": {
       "type": "string",
       "title": "Chapa Transaction Reference"
+    },
+    "picker_id": {
+      "type": "string",
+      "title": "Assigned Picker User ID"
+    },
+    "picker_status": {
+      "type": "string",
+      "enum": [
+        "unassigned",
+        "claimed",
+        "picked",
+        "in_transit",
+        "delivered",
+        "cancelled"
+      ],
+      "default": "unassigned",
+      "title": "Picker Status"
     },
     "status": {
       "type": "string",
@@ -136,5 +159,42 @@
     "buyer_phone",
     "delivery_address",
     "payment_method"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "data.picker_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "data.picker_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }

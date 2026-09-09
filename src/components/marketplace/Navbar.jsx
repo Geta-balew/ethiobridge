@@ -1,16 +1,27 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingCart, Search, Plane } from "lucide-react";
+import { ShoppingCart, Search, Plane, LayoutDashboard, User, LogOut } from "lucide-react";
 import { useCart } from "@/context/CartContext";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { base44 } from "@/api/base44Client";
 
 export default function Navbar({ onSearch }) {
   const { count } = useCart();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    base44.auth.me().then(setUser).catch(() => setUser(null));
+  }, []);
 
   const submit = (e) => {
     e.preventDefault();
     onSearch?.(query);
+  };
+
+  const logout = async () => {
+    await base44.auth.logout();
+    window.location.href = "/";
   };
 
   return (
@@ -38,18 +49,35 @@ export default function Navbar({ onSearch }) {
           />
         </form>
 
-        <button
-          onClick={() => navigate("/checkout")}
-          className="relative inline-flex h-10 items-center gap-2 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
-        >
-          <ShoppingCart className="h-4 w-4" />
-          <span className="hidden sm:inline">Cart</span>
-          {count > 0 && (
-            <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1 text-[11px] font-bold text-white">
-              {count}
-            </span>
+        <div className="flex items-center gap-2">
+          {user?.role === "admin" && (
+            <Link to="/admin" className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-2 text-sm hover:bg-muted sm:inline-flex">
+              <LayoutDashboard className="h-4 w-4" /> Admin
+            </Link>
           )}
-        </button>
+          {user && (
+            <Link to="/picker" className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-2 text-sm hover:bg-muted sm:inline-flex">
+              <User className="h-4 w-4" /> Picker
+            </Link>
+          )}
+          {user && (
+            <button onClick={logout} className="hidden h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground hover:bg-muted sm:inline-flex" aria-label="Log out">
+              <LogOut className="h-4 w-4" />
+            </button>
+          )}
+          <button
+            onClick={() => navigate("/checkout")}
+            className="relative inline-flex h-10 items-center gap-2 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
+          >
+            <ShoppingCart className="h-4 w-4" />
+            <span className="hidden sm:inline">Cart</span>
+            {count > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1 text-[11px] font-bold text-white">
+                {count}
+              </span>
+            )}
+          </button>
+        </div>
       </div>
     </header>
   );
