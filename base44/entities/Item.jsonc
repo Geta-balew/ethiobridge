@@ -1,0 +1,79 @@
+{
+  "name": "Item",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description"
+    },
+    "price": {
+      "type": "number",
+      "title": "Price (ETB)",
+      "minimum": 0
+    },
+    "discounted_price": {
+      "type": "number",
+      "title": "Discounted Price (ETB)",
+      "minimum": 0
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Image URLs"
+    },
+    "category": {
+      "type": "string",
+      "title": "Category",
+      "enum": [
+        "Electronics",
+        "Fashion",
+        "Home & Living",
+        "Beauty & Health",
+        "Groceries",
+        "Kids",
+        "Other"
+      ]
+    },
+    "stock": {
+      "type": "integer",
+      "title": "Stock",
+      "minimum": 0,
+      "default": 1
+    },
+    "is_offer": {
+      "type": "boolean",
+      "title": "Is Offer",
+      "default": false
+    },
+    "is_deal": {
+      "type": "boolean",
+      "title": "Is Deal of the Day",
+      "default": false
+    },
+    "offer_label": {
+      "type": "string",
+      "title": "Offer Label (e.g. 30% OFF)"
+    },
+    "status": {
+      "type": "string",
+      "title": "Verification Status",
+      "enum": [
+        "draft",
+        "verified",
+        "published"
+      ],
+      "default": "draft"
+    }
+  },
+  "required": [
+    "title",
+    "price",
+    "category"
+  ]
+}

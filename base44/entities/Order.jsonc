@@ -1,0 +1,140 @@
+{
+  "name": "Order",
+  "type": "object",
+  "properties": {
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "item_id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "image": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "Items"
+    },
+    "subtotal": {
+      "type": "number",
+      "title": "Subtotal (ETB)"
+    },
+    "delivery_fee": {
+      "type": "number",
+      "title": "Delivery Fee (ETB)",
+      "default": 0
+    },
+    "total": {
+      "type": "number",
+      "title": "Total (ETB)"
+    },
+    "buyer_name": {
+      "type": "string",
+      "title": "Full Name"
+    },
+    "buyer_phone": {
+      "type": "string",
+      "title": "Phone"
+    },
+    "buyer_email": {
+      "type": "string",
+      "title": "Email"
+    },
+    "passport_number": {
+      "type": "string",
+      "title": "Passport Number"
+    },
+    "passport_image": {
+      "type": "string",
+      "title": "Passport Image URL"
+    },
+    "ticket_number": {
+      "type": "string",
+      "title": "Ticket Number"
+    },
+    "ticket_image": {
+      "type": "string",
+      "title": "Ticket Image URL"
+    },
+    "flight_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Flight Date"
+    },
+    "flight_from": {
+      "type": "string",
+      "title": "Flight From",
+      "default": "Dubai"
+    },
+    "flight_to": {
+      "type": "string",
+      "title": "Flight To",
+      "default": "Addis Ababa"
+    },
+    "delivery_address": {
+      "type": "string",
+      "title": "Delivery Address"
+    },
+    "delivery_city": {
+      "type": "string",
+      "title": "Delivery City"
+    },
+    "delivery_region": {
+      "type": "string",
+      "title": "Delivery Region (Rural Area)"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "chapa",
+        "manual"
+      ],
+      "title": "Payment Method"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "paid",
+        "failed",
+        "manual_pending"
+      ],
+      "default": "pending",
+      "title": "Payment Status"
+    },
+    "chapa_tx_ref": {
+      "type": "string",
+      "title": "Chapa Transaction Reference"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "placed",
+        "verified",
+        "delivered",
+        "cancelled"
+      ],
+      "default": "placed",
+      "title": "Order Status"
+    }
+  },
+  "required": [
+    "items",
+    "total",
+    "buyer_name",
+    "buyer_phone",
+    "delivery_address",
+    "payment_method"
+  ]
+}
