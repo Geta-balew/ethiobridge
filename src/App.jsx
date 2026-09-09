@@ -37,14 +37,12 @@ const AuthenticatedApp = () => {
 
   // Render the main app
   return (
-    <CartProvider>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/item/:id" element={<ItemDetail />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="*" element={<PageNotFound />} />
-      </Routes>
-    </CartProvider>
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/item/:id" element={<ItemDetail />} />
+      <Route path="/checkout" element={<Checkout />} />
+      <Route path="*" element={<PageNotFound />} />
+    </Routes>
   );
 };
 
@@ -54,11 +52,13 @@ function App() {
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
-        <Router>
-          <ScrollToTop />
-          <AuthenticatedApp />
-        </Router>
-        <Toaster />
+        <CartProvider>
+          <Router>
+            <ScrollToTop />
+            <AuthenticatedApp />
+          </Router>
+          <Toaster />
+        </CartProvider>
       </QueryClientProvider>
     </AuthProvider>
   )
