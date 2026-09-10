@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingCart, Search, Plane, LayoutDashboard, User, LogOut, FileText } from "lucide-react";
+import { ShoppingCart, Search, Plane, LayoutDashboard, User, LogOut, FileText, Menu, X } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
@@ -9,6 +9,7 @@ export default function Navbar({ onSearch }) {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [user, setUser] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => setUser(null));
@@ -24,9 +25,16 @@ export default function Navbar({ onSearch }) {
     window.location.href = "/";
   };
 
+  const links = [
+    { to: "/tickets", label: "Tickets", icon: Plane, show: true },
+    { to: "/visa", label: "Visa", icon: FileText, show: true },
+    { to: "/picker", label: "Picker", icon: User, show: !!user },
+    { to: "/admin", label: "Admin", icon: LayoutDashboard, show: user?.role === "admin" },
+  ].filter((l) => l.show);
+
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:gap-4 sm:px-6">
         <Link to="/" className="flex items-center gap-2 shrink-0">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
             <Plane className="h-5 w-5" />
@@ -50,27 +58,20 @@ export default function Navbar({ onSearch }) {
         </form>
 
         <div className="flex items-center gap-2">
-          <Link to="/tickets" className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-2 text-sm hover:bg-muted sm:inline-flex">
-            <Plane className="h-4 w-4" /> Tickets
-          </Link>
-          <Link to="/visa" className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-2 text-sm hover:bg-muted sm:inline-flex">
-            <FileText className="h-4 w-4" /> Visa
-          </Link>
-          {user?.role === "admin" && (
-            <Link to="/admin" className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-2 text-sm hover:bg-muted sm:inline-flex">
-              <LayoutDashboard className="h-4 w-4" /> Admin
-            </Link>
-          )}
-          {user && (
-            <Link to="/picker" className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-2 text-sm hover:bg-muted sm:inline-flex">
-              <User className="h-4 w-4" /> Picker
-            </Link>
-          )}
-          {user && (
-            <button onClick={logout} className="hidden h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground hover:bg-muted sm:inline-flex" aria-label="Log out">
-              <LogOut className="h-4 w-4" />
-            </button>
-          )}
+          {/* Desktop links */}
+          <div className="hidden items-center gap-2 md:flex">
+            {links.map((l) => (
+              <Link key={l.to} to={l.to} className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-2 text-sm hover:bg-muted">
+                <l.icon className="h-4 w-4" /> {l.label}
+              </Link>
+            ))}
+            {user && (
+              <button onClick={logout} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground hover:bg-muted" aria-label="Log out">
+                <LogOut className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+
           <button
             onClick={() => navigate("/checkout")}
             className="relative inline-flex h-10 items-center gap-2 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
@@ -83,8 +84,45 @@ export default function Navbar({ onSearch }) {
               </span>
             )}
           </button>
+
+          {/* Mobile menu toggle */}
+          <button
+            onClick={() => setMenuOpen((o) => !o)}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border text-foreground hover:bg-muted md:hidden"
+            aria-label="Menu"
+          >
+            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile dropdown */}
+      {menuOpen && (
+        <div className="border-t border-border bg-background md:hidden">
+          <div className="mx-auto max-w-7xl px-4 py-3">
+            <div className="grid grid-cols-2 gap-2">
+              {links.map((l) => (
+                <Link
+                  key={l.to}
+                  to={l.to}
+                  onClick={() => setMenuOpen(false)}
+                  className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2.5 text-sm hover:bg-muted"
+                >
+                  <l.icon className="h-4 w-4" /> {l.label}
+                </Link>
+              ))}
+              {user && (
+                <button
+                  onClick={() => { setMenuOpen(false); logout(); }}
+                  className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2.5 text-sm text-muted-foreground hover:bg-muted"
+                >
+                  <LogOut className="h-4 w-4" /> Log out
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
