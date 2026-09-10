@@ -1,0 +1,82 @@
+{
+  "name": "TicketBooking",
+  "type": "object",
+  "properties": {
+    "flight_ticket_id": {
+      "type": "string",
+      "title": "Flight Ticket ID"
+    },
+    "destination": {
+      "type": "string",
+      "title": "Destination"
+    },
+    "airline": {
+      "type": "string",
+      "title": "Airline"
+    },
+    "departure_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Departure Date"
+    },
+    "price": {
+      "type": "number",
+      "title": "Price (ETB)"
+    },
+    "buyer_name": {
+      "type": "string",
+      "title": "Full Name"
+    },
+    "buyer_phone": {
+      "type": "string",
+      "title": "Phone"
+    },
+    "buyer_email": {
+      "type": "string",
+      "title": "Email"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "confirmed",
+        "cancelled"
+      ],
+      "default": "pending",
+      "title": "Booking Status"
+    }
+  },
+  "required": [
+    "flight_ticket_id",
+    "destination",
+    "buyer_name",
+    "buyer_phone"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

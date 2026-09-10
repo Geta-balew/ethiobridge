@@ -1,0 +1,102 @@
+{
+  "name": "VisaRequest",
+  "type": "object",
+  "properties": {
+    "country": {
+      "type": "string",
+      "enum": [
+        "Dubai",
+        "China",
+        "Other"
+      ],
+      "title": "Destination Country"
+    },
+    "destination_country": {
+      "type": "string",
+      "title": "Other Country (if applicable)"
+    },
+    "full_name": {
+      "type": "string",
+      "title": "Full Name"
+    },
+    "phone": {
+      "type": "string",
+      "title": "Phone"
+    },
+    "email": {
+      "type": "string",
+      "title": "Email"
+    },
+    "passport_number": {
+      "type": "string",
+      "title": "Passport Number"
+    },
+    "travel_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Intended Travel Date"
+    },
+    "duration_days": {
+      "type": "integer",
+      "title": "Duration (days)",
+      "minimum": 1,
+      "default": 7
+    },
+    "purpose": {
+      "type": "string",
+      "title": "Purpose of Travel"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending",
+      "title": "Status"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Admin Notes"
+    },
+    "handled_by_id": {
+      "type": "string",
+      "title": "Handled By Admin ID"
+    }
+  },
+  "required": [
+    "country",
+    "full_name",
+    "phone",
+    "passport_number",
+    "travel_date"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

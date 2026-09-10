@@ -50,7 +50,11 @@
     },
     "buyer_phone": {
       "type": "string",
-      "title": "Phone"
+      "title": "Primary Phone"
+    },
+    "buyer_alt_phone": {
+      "type": "string",
+      "title": "Alternative Phone"
     },
     "buyer_email": {
       "type": "string",
@@ -90,6 +94,10 @@
     "delivery_address": {
       "type": "string",
       "title": "Delivery Address"
+    },
+    "delivery_alt_address": {
+      "type": "string",
+      "title": "Alternative Delivery Address"
     },
     "delivery_city": {
       "type": "string",
@@ -157,7 +165,9 @@
     "total",
     "buyer_name",
     "buyer_phone",
+    "buyer_alt_phone",
     "delivery_address",
+    "delivery_alt_address",
     "payment_method"
   ],
   "rls": {

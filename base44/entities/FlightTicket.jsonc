@@ -1,0 +1,93 @@
+{
+  "name": "FlightTicket",
+  "type": "object",
+  "properties": {
+    "destination": {
+      "type": "string",
+      "enum": [
+        "Dubai",
+        "Turkey",
+        "Thailand",
+        "China"
+      ],
+      "title": "Destination"
+    },
+    "departure_city": {
+      "type": "string",
+      "title": "Departure City",
+      "default": "Addis Ababa"
+    },
+    "airline": {
+      "type": "string",
+      "title": "Airline"
+    },
+    "departure_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Departure Date"
+    },
+    "return_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Return Date"
+    },
+    "price": {
+      "type": "number",
+      "title": "Price (ETB)",
+      "minimum": 0
+    },
+    "contact_phone": {
+      "type": "string",
+      "title": "Contact Phone"
+    },
+    "contact_email": {
+      "type": "string",
+      "title": "Contact Email"
+    },
+    "seats_available": {
+      "type": "integer",
+      "title": "Seats Available",
+      "default": 0,
+      "minimum": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "available",
+        "limited",
+        "sold_out"
+      ],
+      "default": "available",
+      "title": "Availability"
+    },
+    "image": {
+      "type": "string",
+      "title": "Image URL"
+    }
+  },
+  "required": [
+    "destination",
+    "airline",
+    "departure_date",
+    "price",
+    "contact_phone"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -34,6 +34,32 @@
       "type": "string",
       "title": "Dubai Residence Permit / Visa Image URL"
     },
+    "flight_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Next Flight Date"
+    },
+    "flight_ticket_image": {
+      "type": "string",
+      "title": "Flight Ticket Photo URL"
+    },
+    "previous_trips_count": {
+      "type": "integer",
+      "title": "Previous Trips to Dubai",
+      "default": 0,
+      "minimum": 0
+    },
+    "first_time_status": {
+      "type": "string",
+      "enum": [
+        "first_time_traveler",
+        "occasional_traveler",
+        "frequent_traveler",
+        "business_traveler"
+      ],
+      "default": "first_time_traveler",
+      "title": "Traveler Status (customs risk)"
+    },
     "verification_status": {
       "type": "string",
       "enum": [
@@ -75,7 +101,9 @@
     "full_name",
     "phone",
     "passport_number",
-    "national_id_number"
+    "national_id_number",
+    "flight_date",
+    "previous_trips_count"
   ],
   "rls": {
     "read": {
