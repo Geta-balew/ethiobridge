@@ -35,6 +35,29 @@
       "type": "string",
       "title": "Email"
     },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "request",
+        "chapa"
+      ],
+      "default": "request",
+      "title": "Payment Method"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "paid",
+        "failed"
+      ],
+      "default": "pending",
+      "title": "Payment Status"
+    },
+    "chapa_tx_ref": {
+      "type": "string",
+      "title": "Chapa Transaction Reference"
+    },
     "status": {
       "type": "string",
       "enum": [

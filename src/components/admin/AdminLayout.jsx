@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
 import { Outlet, NavLink, useNavigate, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { LayoutDashboard, Package, UserCheck, ClipboardList, Plane, LogOut, Loader2 } from "lucide-react";
+import { LayoutDashboard, Package, UserCheck, ClipboardList, Plane, Ticket, FileText, LogOut, Loader2 } from "lucide-react";
 
 const NAV = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/admin/items", label: "Items", icon: Package },
   { to: "/admin/pickers", label: "Pickers", icon: UserCheck },
   { to: "/admin/orders", label: "Orders", icon: ClipboardList },
+  { to: "/admin/tickets", label: "Flights", icon: Plane },
+  { to: "/admin/bookings", label: "Bookings", icon: Ticket },
+  { to: "/admin/visas", label: "Visas", icon: FileText },
 ];
 
 export default function AdminLayout() {

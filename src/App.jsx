@@ -22,6 +22,9 @@ import AdminDashboard from '@/pages/admin/AdminDashboard';
 import ManageItems from '@/pages/admin/ManageItems';
 import ManagePickers from '@/pages/admin/ManagePickers';
 import ManageOrders from '@/pages/admin/ManageOrders';
+import ManageTickets from '@/pages/admin/ManageTickets';
+import ManageTicketBookings from '@/pages/admin/ManageTicketBookings';
+import ManageVisaRequests from '@/pages/admin/ManageVisaRequests';
 import Tickets from '@/pages/Tickets';
 import Visa from '@/pages/Visa';
 // Add page imports here
@@ -69,6 +72,9 @@ const AuthenticatedApp = () => {
           <Route path="items" element={<ManageItems />} />
           <Route path="pickers" element={<ManagePickers />} />
           <Route path="orders" element={<ManageOrders />} />
+          <Route path="tickets" element={<ManageTickets />} />
+          <Route path="bookings" element={<ManageTicketBookings />} />
+          <Route path="visas" element={<ManageVisaRequests />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />
