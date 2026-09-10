@@ -22,6 +22,8 @@ import AdminDashboard from '@/pages/admin/AdminDashboard';
 import ManageItems from '@/pages/admin/ManageItems';
 import ManagePickers from '@/pages/admin/ManagePickers';
 import ManageOrders from '@/pages/admin/ManageOrders';
+import Tickets from '@/pages/Tickets';
+import Visa from '@/pages/Visa';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -56,6 +58,8 @@ const AuthenticatedApp = () => {
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/" element={<Home />} />
       <Route path="/item/:id" element={<ItemDetail />} />
+      <Route path="/tickets" element={<Tickets />} />
+      <Route path="/visa" element={<Visa />} />
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/picker" element={<PickerDashboard />} />

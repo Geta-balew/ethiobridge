@@ -19,11 +19,13 @@ export default function Checkout() {
   const [form, setForm] = useState({
     buyer_name: "",
     buyer_phone: "",
+    buyer_alt_phone: "",
     buyer_email: "",
     passport_number: "",
     ticket_number: "",
     flight_date: "",
     delivery_address: "",
+    delivery_alt_address: "",
     delivery_city: "",
     delivery_region: "Addis Ababa",
     payment_method: "chapa",
@@ -63,6 +65,8 @@ export default function Checkout() {
     if (!ticketImg) return "Please upload a photo of your ticket.";
     if (!form.flight_date) return "Please select your flight date.";
     if (!form.delivery_address.trim()) return "Please enter your delivery address.";
+    if (!form.delivery_alt_address.trim()) return "Please enter an alternative delivery address.";
+    if (!form.buyer_alt_phone.trim()) return "Please enter an alternative phone number.";
     if (!form.delivery_city.trim()) return "Please enter your delivery city.";
     return null;
   };
@@ -89,6 +93,7 @@ export default function Checkout() {
         total,
         buyer_name: form.buyer_name,
         buyer_phone: form.buyer_phone,
+        buyer_alt_phone: form.buyer_alt_phone,
         buyer_email: form.buyer_email,
         passport_number: form.passport_number,
         passport_image: passportImg,
@@ -98,6 +103,7 @@ export default function Checkout() {
         flight_from: "Dubai",
         flight_to: "Addis Ababa",
         delivery_address: form.delivery_address,
+        delivery_alt_address: form.delivery_alt_address,
         delivery_city: form.delivery_city,
         delivery_region: form.delivery_region,
         payment_method: form.payment_method,
@@ -208,6 +214,9 @@ export default function Checkout() {
                 <Field label="Phone number" required>
                   <input className={inputCls} value={form.buyer_phone} onChange={(e) => set("buyer_phone", e.target.value)} placeholder="+251…" />
                 </Field>
+                <Field label="Alternative phone number" required>
+                  <input className={inputCls} value={form.buyer_alt_phone} onChange={(e) => set("buyer_alt_phone", e.target.value)} placeholder="+251…" />
+                </Field>
                 <Field label="Email (optional)">
                   <input className={inputCls} value={form.buyer_email} onChange={(e) => set("buyer_email", e.target.value)} />
                 </Field>
@@ -231,6 +240,9 @@ export default function Checkout() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Street / house address" required className="sm:col-span-2">
                   <input className={inputCls} value={form.delivery_address} onChange={(e) => set("delivery_address", e.target.value)} />
+                </Field>
+                <Field label="Alternative address (landmark / backup)" required className="sm:col-span-2">
+                  <input className={inputCls} value={form.delivery_alt_address} onChange={(e) => set("delivery_alt_address", e.target.value)} placeholder="Nearby landmark, office, or relative's address" />
                 </Field>
                 <Field label="City" required>
                   <input className={inputCls} value={form.delivery_city} onChange={(e) => set("delivery_city", e.target.value)} placeholder="e.g. Addis Ababa" />

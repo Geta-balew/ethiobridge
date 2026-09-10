@@ -10,8 +10,10 @@ export default function BecomePicker() {
   const { toast } = useToast();
   const [form, setForm] = useState({
     full_name: "", phone: "", email: "", passport_number: "", national_id_number: "", bio: "", bank_account: "",
+    flight_date: "", previous_trips_count: 0, first_time_status: "first_time_traveler",
   });
   const [passportImg, setPassportImg] = useState("");
+  const [ticketImg, setTicketImg] = useState("");
   const [idImg, setIdImg] = useState("");
   const [permitImg, setPermitImg] = useState("");
   const [uploading, setUploading] = useState(null);
@@ -40,6 +42,14 @@ export default function BecomePicker() {
       toast({ title: "Passport and National ID photos are required", variant: "destructive" });
       return;
     }
+    if (!form.flight_date) {
+      toast({ title: "Please enter your next flight date", variant: "destructive" });
+      return;
+    }
+    if (!ticketImg) {
+      toast({ title: "Flight ticket photo is required", variant: "destructive" });
+      return;
+    }
     setSaving(true);
     try {
       await base44.entities.Picker.create({
@@ -47,6 +57,7 @@ export default function BecomePicker() {
         passport_image: passportImg,
         national_id_image: idImg,
         dubai_residence_permit: permitImg,
+        flight_ticket_image: ticketImg,
         verification_status: "pending",
       });
       toast({ title: "Application submitted!", description: "We'll review your documents shortly." });
@@ -81,13 +92,24 @@ export default function BecomePicker() {
             <FL label="Bank account (for payout)"><input className={inp} value={form.bank_account} onChange={(e) => set("bank_account", e.target.value)} /></FL>
             <FL label="Passport number" required><input className={inp} value={form.passport_number} onChange={(e) => set("passport_number", e.target.value)} /></FL>
             <FL label="Ethiopian national ID number" required><input className={inp} value={form.national_id_number} onChange={(e) => set("national_id_number", e.target.value)} /></FL>
+            <FL label="Next flight date" required><input type="date" className={inp} value={form.flight_date} onChange={(e) => set("flight_date", e.target.value)} /></FL>
+            <FL label="Previous trips to Dubai" required><input type="number" min="0" className={inp} value={form.previous_trips_count} onChange={(e) => set("previous_trips_count", Number(e.target.value))} /></FL>
+            <FL label="Traveler status (customs risk)" required>
+              <select className={inp} value={form.first_time_status} onChange={(e) => set("first_time_status", e.target.value)}>
+                <option value="first_time_traveler">First-time traveler</option>
+                <option value="occasional_traveler">Occasional traveler</option>
+                <option value="frequent_traveler">Frequent traveler</option>
+                <option value="business_traveler">Business traveler</option>
+              </select>
+            </FL>
             <FL label="Short bio" full><textarea className={inp + " min-h-16"} value={form.bio} onChange={(e) => set("bio", e.target.value)} placeholder="Tell us about your travel frequency Dubai → Addis…" /></FL>
           </div>
 
-          <div className="mt-5 grid gap-4 sm:grid-cols-3">
-            <Photo label="Passport photo" required value={passportImg} uploading={uploading === "passport"} onUpload={(f) => upload(f, "passport", setPassportImg)} />
+          <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Photo label="Passport front page" required value={passportImg} uploading={uploading === "passport"} onUpload={(f) => upload(f, "passport", setPassportImg)} />
             <Photo label="National ID photo" required value={idImg} uploading={uploading === "id"} onUpload={(f) => upload(f, "id", setIdImg)} />
             <Photo label="Dubai residence permit / visa" value={permitImg} uploading={uploading === "permit"} onUpload={(f) => upload(f, "permit", setPermitImg)} />
+            <Photo label="Flight ticket photo" required value={ticketImg} uploading={uploading === "ticket"} onUpload={(f) => upload(f, "ticket", setTicketImg)} />
           </div>
 
           <button onClick={submit} disabled={saving} className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-50">

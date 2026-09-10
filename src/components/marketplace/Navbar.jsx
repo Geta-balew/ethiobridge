@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingCart, Search, Plane, LayoutDashboard, User, LogOut } from "lucide-react";
+import { ShoppingCart, Search, Plane, LayoutDashboard, User, LogOut, FileText } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
@@ -50,6 +50,12 @@ export default function Navbar({ onSearch }) {
         </form>
 
         <div className="flex items-center gap-2">
+          <Link to="/tickets" className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-2 text-sm hover:bg-muted sm:inline-flex">
+            <Plane className="h-4 w-4" /> Tickets
+          </Link>
+          <Link to="/visa" className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-2 text-sm hover:bg-muted sm:inline-flex">
+            <FileText className="h-4 w-4" /> Visa
+          </Link>
           {user?.role === "admin" && (
             <Link to="/admin" className="hidden items-center gap-1.5 rounded-full border border-border px-3 py-2 text-sm hover:bg-muted sm:inline-flex">
               <LayoutDashboard className="h-4 w-4" /> Admin
