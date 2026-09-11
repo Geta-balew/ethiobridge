@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import Navbar from "@/components/marketplace/Navbar";
+import AnnouncementTicker from "@/components/AnnouncementTicker";
 import ItemCard from "@/components/marketplace/ItemCard";
 import { Zap, Package, Loader2, Plane } from "lucide-react";
 
@@ -49,6 +50,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
+      <AnnouncementTicker />
       <Navbar onSearch={setQuery} />
 
       {/* Hero */}

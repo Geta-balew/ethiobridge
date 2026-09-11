@@ -25,6 +25,13 @@
       "title": "Discounted Price (ETB)",
       "minimum": 0
     },
+    "discount_percent": {
+      "type": "number",
+      "title": "Per-item Discount (%)",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 0
+    },
     "images": {
       "type": "array",
       "items": {

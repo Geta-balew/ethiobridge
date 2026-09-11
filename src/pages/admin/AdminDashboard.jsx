@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Package, UserCheck, ClipboardList, TrendingUp, Loader2 } from "lucide-react";
+import { Package, UserCheck, ClipboardList, TrendingUp, Loader2, SlidersHorizontal } from "lucide-react";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
@@ -67,6 +67,17 @@ export default function AdminDashboard() {
         </div>
         <p className="mt-2 text-3xl font-semibold">{(stats.revenue || 0).toLocaleString()} <span className="text-base text-muted-foreground">ETB</span></p>
       </div>
+
+      <Link to="/admin/settings" className="mt-4 flex items-center gap-3 rounded-2xl border border-border bg-gradient-to-r from-amber-50 to-rose-50 p-5 transition hover:shadow-md">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+          <SlidersHorizontal className="h-5 w-5" />
+        </div>
+        <div className="flex-1">
+          <h2 className="text-base font-semibold">Price Controlling</h2>
+          <p className="text-sm text-muted-foreground">Currency rates, site-wide &amp; per-item discounts, and coupon codes</p>
+        </div>
+        <span className="text-sm font-medium text-primary">Open →</span>
+      </Link>
     </div>
   );
 }

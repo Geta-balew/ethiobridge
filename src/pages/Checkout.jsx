@@ -29,12 +29,48 @@ export default function Checkout() {
     payment_method: "chapa",
   });
   const [submitting, setSubmitting] = useState(false);
+  const [couponCode, setCouponCode] = useState("");
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [couponApplied, setCouponApplied] = useState(null);
+  const [couponMsg, setCouponMsg] = useState("");
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
 
   const deliveryFee = subtotal > 0 ? 150 : 0;
   const pickerFee = subtotal > 0 ? Math.max(500, Math.round(subtotal * 0.1)) : 0;
-  const total = subtotal + deliveryFee + pickerFee;
+  const total = subtotal - couponDiscount + deliveryFee + pickerFee;
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
+  useEffect(() => {
+    setCouponDiscount(0);
+    setCouponApplied(null);
+    setCouponMsg("");
+  }, [subtotal]);
+
+  const applyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setApplyingCoupon(true);
+    setCouponMsg("");
+    try {
+      const res = await base44.functions.invoke("validateCoupon", { code: couponCode.trim() });
+      const data = res.data || res;
+      if (data.valid) {
+        setCouponDiscount(Math.round((subtotal * data.discount_percent) / 100));
+        setCouponApplied({ code: data.code, percent: data.discount_percent });
+        setCouponMsg(`${data.discount_percent}% discount applied`);
+      } else {
+        setCouponDiscount(0);
+        setCouponApplied(null);
+        setCouponMsg(data.message || "Invalid coupon");
+      }
+    } catch (e) {
+      setCouponDiscount(0);
+      setCouponApplied(null);
+      setCouponMsg(e.response?.data?.message || e.message || "Invalid coupon");
+    } finally {
+      setApplyingCoupon(false);
+    }
+  };
 
   const validate = () => {
     if (items.length === 0) return "Your cart is empty.";
@@ -64,6 +100,8 @@ export default function Checkout() {
         subtotal,
         delivery_fee: deliveryFee,
         picker_fee: pickerFee,
+        coupon_code: couponApplied?.code || "",
+        coupon_discount: couponDiscount,
         total,
         buyer_name: form.buyer_name,
         buyer_phone: form.buyer_phone,
@@ -204,11 +242,23 @@ export default function Checkout() {
               <CardTitle>Summary</CardTitle>
               <div className="space-y-2 text-sm">
                 <Row label="Subtotal" value={`${subtotal.toLocaleString()} ETB`} />
+                {couponDiscount > 0 && <Row label={`Coupon (${couponApplied?.code})`} value={`−${couponDiscount.toLocaleString()} ETB`} />}
                 <Row label="Delivery fee" value={`${deliveryFee.toLocaleString()} ETB`} />
                 <Row label="Picker service fee" value={`${pickerFee.toLocaleString()} ETB`} />
                 <div className="my-2 border-t border-border" />
                 <Row label="Total" value={`${total.toLocaleString()} ETB`} bold />
               </div>
+              <div className="mt-4">
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Coupon code</label>
+                <div className="flex gap-2">
+                  <input className={inputCls} value={couponCode} onChange={(e) => setCouponCode(e.target.value)} placeholder="Enter code" />
+                  <button onClick={applyCoupon} disabled={applyingCoupon} className="shrink-0 rounded-full border border-border px-4 text-sm font-medium hover:bg-muted disabled:opacity-50">
+                    {applyingCoupon ? "…" : "Apply"}
+                  </button>
+                </div>
+                {couponMsg && <p className={`mt-1.5 text-xs ${couponApplied ? "text-emerald-600" : "text-rose-500"}`}>{couponMsg}</p>}
+              </div>
+
               <button onClick={submit} disabled={submitting} className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:opacity-50">
                 {submitting ? <><Loader2 className="h-4 w-4 animate-spin" /> Placing order…</> : form.payment_method === "chapa" ? "Pay with Chapa" : "Place order"}
               </button>

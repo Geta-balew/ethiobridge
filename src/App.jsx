@@ -25,6 +25,7 @@ import ManageOrders from '@/pages/admin/ManageOrders';
 import ManageTickets from '@/pages/admin/ManageTickets';
 import ManageTicketBookings from '@/pages/admin/ManageTicketBookings';
 import ManageVisaRequests from '@/pages/admin/ManageVisaRequests';
+import ManageAnnouncements from '@/pages/admin/ManageAnnouncements';
 import PriceControls from '@/pages/admin/PriceControls';
 import MyOrders from '@/pages/MyOrders';
 import Tickets from '@/pages/Tickets';
@@ -78,6 +79,7 @@ const AuthenticatedApp = () => {
           <Route path="tickets" element={<ManageTickets />} />
           <Route path="bookings" element={<ManageTicketBookings />} />
           <Route path="visas" element={<ManageVisaRequests />} />
+          <Route path="announcements" element={<ManageAnnouncements />} />
           <Route path="settings" element={<PriceControls />} />
         </Route>
       </Route>

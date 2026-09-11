@@ -1,0 +1,68 @@
+{
+  "name": "Coupon",
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string",
+      "title": "Coupon Code"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description"
+    },
+    "discount_percent": {
+      "type": "number",
+      "title": "Discount (%)",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "active": {
+      "type": "boolean",
+      "title": "Active",
+      "default": true
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date",
+      "title": "Expiry Date"
+    },
+    "max_uses": {
+      "type": "integer",
+      "title": "Max Uses (0 = unlimited)",
+      "default": 0,
+      "minimum": 0
+    },
+    "usage_count": {
+      "type": "integer",
+      "title": "Usage Count",
+      "default": 0,
+      "minimum": 0
+    }
+  },
+  "required": [
+    "code",
+    "discount_percent"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

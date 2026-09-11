@@ -40,6 +40,15 @@
       "title": "Picker Service Fee (ETB)",
       "default": 0
     },
+    "coupon_code": {
+      "type": "string",
+      "title": "Coupon Code"
+    },
+    "coupon_discount": {
+      "type": "number",
+      "title": "Coupon Discount (ETB)",
+      "default": 0
+    },
     "total": {
       "type": "number",
       "title": "Total (ETB)"

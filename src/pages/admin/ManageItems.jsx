@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Image as Img } from "@/components/ui/image";
 import { useToast } from "@/components/ui/use-toast";
-import { Plus, Pencil, Trash2, X, Upload, Loader2, Zap, Tag, CheckCircle2 } from "lucide-react";
+import { Plus, Pencil, Trash2, X, Upload, Loader2, Zap, Tag, CheckCircle2, Search } from "lucide-react";
 
 const CATEGORIES = ["Electronics", "Fashion", "Home & Living", "Beauty & Health", "Groceries", "Kids", "Other"];
 const empty = {
@@ -16,6 +16,8 @@ export default function ManageItems() {
   const [form, setForm] = useState(empty);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [search, setSearch] = useState("");
+  const [catFilter, setCatFilter] = useState("All");
   const { toast } = useToast();
 
   const load = async () => {
@@ -86,6 +88,15 @@ export default function ManageItems() {
     await load();
   };
 
+  const filtered = (items || []).filter((i) => {
+    if (catFilter !== "All" && i.category !== catFilter) return false;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      if (!i.title?.toLowerCase().includes(q) && !i.description?.toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
@@ -95,11 +106,27 @@ export default function ManageItems() {
         </button>
       </div>
 
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <div className="relative min-w-48 flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search items…"
+            className="h-10 w-full rounded-full border border-input bg-background pl-9 pr-4 text-sm outline-none focus:border-ring"
+          />
+        </div>
+        <select value={catFilter} onChange={(e) => setCatFilter(e.target.value)} className="h-10 rounded-full border border-input bg-background px-3 text-sm outline-none focus:border-ring">
+          <option value="All">All categories</option>
+          {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
+      </div>
+
       {items === null ? (
         <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
       ) : (
         <div className="grid gap-3">
-          {items.map((item) => (
+          {filtered.map((item) => (
             <div key={item.id} className="flex items-center gap-4 rounded-xl border border-border bg-card p-3">
               <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg border border-border bg-muted">
                 {item.images?.[0] && <Img src={item.images[0]} alt="" className="h-full w-full object-cover" fittingType="fill" />}
@@ -121,7 +148,7 @@ export default function ManageItems() {
               <button onClick={() => remove(item)} className="rounded-full p-2 text-rose-500 hover:bg-muted"><Trash2 className="h-4 w-4" /></button>
             </div>
           ))}
-          {items.length === 0 && <p className="py-12 text-center text-muted-foreground">No items yet. Upload your first item.</p>}
+          {filtered.length === 0 && <p className="py-12 text-center text-muted-foreground">No items found.</p>}
         </div>
       )}
 
