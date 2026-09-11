@@ -60,44 +60,9 @@
       "type": "string",
       "title": "Email"
     },
-    "passport_number": {
-      "type": "string",
-      "title": "Passport Number"
-    },
-    "passport_image": {
-      "type": "string",
-      "title": "Passport Image URL"
-    },
-    "ticket_number": {
-      "type": "string",
-      "title": "Ticket Number"
-    },
-    "ticket_image": {
-      "type": "string",
-      "title": "Ticket Image URL"
-    },
-    "flight_date": {
-      "type": "string",
-      "format": "date",
-      "title": "Flight Date"
-    },
-    "flight_from": {
-      "type": "string",
-      "title": "Flight From",
-      "default": "Dubai"
-    },
-    "flight_to": {
-      "type": "string",
-      "title": "Flight To",
-      "default": "Addis Ababa"
-    },
     "delivery_address": {
       "type": "string",
       "title": "Delivery Address"
-    },
-    "delivery_alt_address": {
-      "type": "string",
-      "title": "Alternative Delivery Address"
     },
     "delivery_city": {
       "type": "string",
@@ -105,7 +70,7 @@
     },
     "delivery_region": {
       "type": "string",
-      "title": "Delivery Region (Rural Area)"
+      "title": "Delivery Region"
     },
     "payment_method": {
       "type": "string",
@@ -135,6 +100,26 @@
       "type": "string",
       "title": "Assigned Picker User ID"
     },
+    "requested_picker_id": {
+      "type": "string",
+      "title": "Picker who requested to pick"
+    },
+    "pick_request_status": {
+      "type": "string",
+      "enum": [
+        "none",
+        "requested",
+        "approved",
+        "rejected"
+      ],
+      "default": "none",
+      "title": "Pick Request Status"
+    },
+    "pick_request_trips": {
+      "type": "integer",
+      "title": "Picker's prior Dubai trips",
+      "default": 0
+    },
     "picker_status": {
       "type": "string",
       "enum": [
@@ -147,6 +132,10 @@
       ],
       "default": "unassigned",
       "title": "Picker Status"
+    },
+    "delivery_code": {
+      "type": "string",
+      "title": "Delivery Confirmation Code"
     },
     "status": {
       "type": "string",
@@ -165,9 +154,7 @@
     "total",
     "buyer_name",
     "buyer_phone",
-    "buyer_alt_phone",
     "delivery_address",
-    "delivery_alt_address",
     "payment_method"
   ],
   "rls": {

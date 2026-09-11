@@ -15,6 +15,11 @@
       "title": "Price (ETB)",
       "minimum": 0
     },
+    "price_aed": {
+      "type": "number",
+      "title": "Price in AED (Dirham)",
+      "minimum": 0
+    },
     "discounted_price": {
       "type": "number",
       "title": "Discounted Price (ETB)",

@@ -5,6 +5,7 @@ import { Image } from "@/components/ui/image";
 import { useCart } from "@/context/CartContext";
 import { useToast } from "@/components/ui/use-toast";
 import { ShoppingCart, Tag, Zap, ArrowLeft, Loader2, Minus, Plus, ShieldCheck } from "lucide-react";
+import { computePrice, basePrice } from "@/utils/pricing";
 
 export default function ItemDetail() {
   const { id } = useParams();
@@ -15,12 +16,17 @@ export default function ItemDetail() {
   const [loading, setLoading] = useState(true);
   const [qty, setQty] = useState(1);
   const [activeImg, setActiveImg] = useState(0);
+  const [setting, setSetting] = useState(null);
 
   useEffect(() => {
     (async () => {
       try {
-        const data = await base44.entities.Item.get(id);
+        const [data, settings] = await Promise.all([
+          base44.entities.Item.get(id),
+          base44.entities.AppSetting.list("-created_date", 1),
+        ]);
         setItem(data);
+        setSetting(settings[0] || null);
       } catch {
         setItem(null);
       } finally {
@@ -46,19 +52,20 @@ export default function ItemDetail() {
     );
   }
 
-  const hasDiscount = item.discounted_price && item.discounted_price < item.price;
-  const discountPct = hasDiscount
-    ? Math.round(((item.price - item.discounted_price) / item.price) * 100)
-    : 0;
+  const final = computePrice(item, setting);
+  const original = basePrice(item, setting);
+  const hasDiscount = final < original;
+  const discountPct = hasDiscount ? Math.round(((original - final) / original) * 100) : 0;
   const images = item.images?.length ? item.images : [];
+  const pricedItem = { ...item, price: final, discounted_price: null };
 
   const handleAdd = () => {
-    addItem(item, qty);
+    addItem(pricedItem, qty);
     toast({ title: "Added to cart", description: `${qty} × ${item.title}` });
   };
 
   const buyNow = () => {
-    addItem(item, qty);
+    addItem(pricedItem, qty);
     navigate("/checkout");
   };
 
@@ -115,10 +122,10 @@ export default function ItemDetail() {
 
             <div className="mt-4 flex items-end gap-3">
               <span className="text-3xl font-semibold">
-                {(item.discounted_price || item.price).toLocaleString()} ETB
+                {final.toLocaleString()} ETB
               </span>
               {hasDiscount && (
-                <span className="text-lg text-muted-foreground line-through">{item.price.toLocaleString()} ETB</span>
+                <span className="text-lg text-muted-foreground line-through">{original.toLocaleString()} ETB</span>
               )}
             </div>
 

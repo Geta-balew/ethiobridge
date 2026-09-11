@@ -1,0 +1,40 @@
+{
+  "name": "AppSetting",
+  "type": "object",
+  "properties": {
+    "exchange_rate": {
+      "type": "number",
+      "title": "Exchange Rate (ETB per 1 AED)",
+      "default": 52,
+      "minimum": 0
+    },
+    "global_discount_percent": {
+      "type": "number",
+      "title": "Global Discount (%)",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 100
+    }
+  },
+  "required": [
+    "exchange_rate"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

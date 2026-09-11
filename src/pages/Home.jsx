@@ -11,13 +11,20 @@ export default function Home() {
   const [category, setCategory] = useState("All");
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [setting, setSetting] = useState(null);
 
   useEffect(() => {
     let active = true;
     (async () => {
       try {
-        const data = await base44.entities.Item.filter({ status: "published" }, "-created_date", 100);
-        if (active) setItems(data);
+        const [data, settings] = await Promise.all([
+          base44.entities.Item.filter({ status: "published" }, "-created_date", 100),
+          base44.entities.AppSetting.list("-created_date", 1),
+        ]);
+        if (active) {
+          setItems(data);
+          setSetting(settings[0] || null);
+        }
       } catch (e) {
         if (active) setItems([]);
       } finally {
@@ -72,7 +79,7 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {deals.map((item) => (
-                <ItemCard key={item.id} item={item} />
+                <ItemCard key={item.id} item={item} setting={setting} />
               ))}
             </div>
           </section>
@@ -87,7 +94,7 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {offers.map((item) => (
-                <ItemCard key={item.id} item={item} />
+                <ItemCard key={item.id} item={item} setting={setting} />
               ))}
             </div>
           </section>
@@ -121,7 +128,7 @@ export default function Home() {
           ) : (
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {filtered.map((item) => (
-                <ItemCard key={item.id} item={item} />
+                <ItemCard key={item.id} item={item} setting={setting} />
               ))}
             </div>
           )}

@@ -6,7 +6,7 @@ import { Plus, Pencil, Trash2, X, Upload, Loader2, Zap, Tag, CheckCircle2 } from
 
 const CATEGORIES = ["Electronics", "Fashion", "Home & Living", "Beauty & Health", "Groceries", "Kids", "Other"];
 const empty = {
-  title: "", description: "", price: "", discounted_price: "", category: "Electronics",
+  title: "", description: "", price: "", price_aed: "", discounted_price: "", category: "Electronics",
   stock: 1, images: [], is_offer: false, is_deal: false, offer_label: "", status: "draft",
 };
 
@@ -56,6 +56,7 @@ export default function ManageItems() {
       const payload = {
         ...form,
         price: Number(form.price),
+        price_aed: form.price_aed ? Number(form.price_aed) : null,
         discounted_price: form.discounted_price ? Number(form.discounted_price) : null,
         stock: Number(form.stock) || 0,
       };
@@ -138,6 +139,7 @@ export default function ManageItems() {
               <L label="Description"><textarea className={inp + " min-h-20"} value={form.description} onChange={(e) => set("description", e.target.value)} /></L>
               <div className="grid grid-cols-2 gap-3">
                 <L label="Price (ETB)"><input type="number" className={inp} value={form.price} onChange={(e) => set("price", e.target.value)} /></L>
+                <L label="Price in AED (Dirham)"><input type="number" className={inp} value={form.price_aed} onChange={(e) => set("price_aed", e.target.value)} /></L>
                 <L label="Discounted price (ETB)"><input type="number" className={inp} value={form.discounted_price} onChange={(e) => set("discounted_price", e.target.value)} /></L>
               </div>
               <div className="grid grid-cols-2 gap-3">

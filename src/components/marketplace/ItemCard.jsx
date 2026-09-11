@@ -3,19 +3,20 @@ import { Image } from "@/components/ui/image";
 import { ShoppingCart, Tag, Zap } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useToast } from "@/components/ui/use-toast";
+import { computePrice, basePrice } from "@/utils/pricing";
 
-export default function ItemCard({ item }) {
+export default function ItemCard({ item, setting }) {
   const { addItem } = useCart();
   const { toast } = useToast();
-  const hasDiscount = item.discounted_price && item.discounted_price < item.price;
-  const discountPct = hasDiscount
-    ? Math.round(((item.price - item.discounted_price) / item.price) * 100)
-    : 0;
+  const final = computePrice(item, setting);
+  const original = basePrice(item, setting);
+  const hasDiscount = final < original;
+  const discountPct = hasDiscount ? Math.round(((original - final) / original) * 100) : 0;
 
   const handleAdd = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    addItem(item, 1);
+    addItem({ ...item, price: final, discounted_price: null }, 1);
     toast({ title: "Added to cart", description: item.title });
   };
 
@@ -64,11 +65,11 @@ export default function ItemCard({ item }) {
           <div className="flex flex-col">
             {hasDiscount && (
               <span className="text-xs text-muted-foreground line-through">
-                {item.price.toLocaleString()} ETB
+                {original.toLocaleString()} ETB
               </span>
             )}
             <span className="text-base font-semibold text-foreground">
-              {(item.discounted_price || item.price).toLocaleString()} ETB
+              {final.toLocaleString()} ETB
             </span>
           </div>
           <button

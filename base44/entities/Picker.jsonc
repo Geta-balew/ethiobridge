@@ -95,6 +95,16 @@
     "bank_account": {
       "type": "string",
       "title": "Bank Account (for payout)"
+    },
+    "wallet_balance": {
+      "type": "number",
+      "title": "Wallet Balance (ETB)",
+      "default": 0
+    },
+    "total_earnings": {
+      "type": "number",
+      "title": "Total Earnings (ETB)",
+      "default": 0
     }
   },
   "required": [

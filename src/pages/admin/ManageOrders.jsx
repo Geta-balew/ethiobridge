@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Image as Img } from "@/components/ui/image";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, ChevronDown, ChevronUp, CheckCircle2 } from "lucide-react";
+import { Loader2, ChevronDown, ChevronUp, CheckCircle2, XCircle } from "lucide-react";
 
 const PAYMENT_BADGE = {
   paid: "bg-emerald-100 text-emerald-700",
@@ -23,6 +23,7 @@ const PICKER_BADGE = {
 export default function ManageOrders() {
   const [orders, setOrders] = useState(null);
   const [open, setOpen] = useState(null);
+  const [reviewing, setReviewing] = useState(null);
   const { toast } = useToast();
 
   const load = async () => setOrders(await base44.entities.Order.list("-created_date", 100));
@@ -32,6 +33,19 @@ export default function ManageOrders() {
     await base44.entities.Order.update(o.id, { payment_status: "manual_confirmed" });
     toast({ title: "Manual payment confirmed" });
     await load();
+  };
+
+  const reviewPick = async (o, approved) => {
+    setReviewing(o.id);
+    try {
+      await base44.functions.invoke("reviewPickRequest", { order_id: o.id, approved });
+      toast({ title: approved ? "Pick request approved" : "Pick request rejected" });
+      await load();
+    } catch (e) {
+      toast({ title: "Failed", description: e.response?.data?.error || e.message, variant: "destructive" });
+    } finally {
+      setReviewing(null);
+    }
   };
 
   if (orders === null) return <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
@@ -49,6 +63,7 @@ export default function ManageOrders() {
               </div>
               <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${PAYMENT_BADGE[o.payment_status] || ""}`}>{o.payment_status}</span>
               <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${PICKER_BADGE[o.picker_status] || ""}`}>{o.picker_status}</span>
+              {o.pick_request_status === "requested" && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">pick requested</span>}
               {open === o.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </button>
 
@@ -73,19 +88,28 @@ export default function ManageOrders() {
                   </div>
                   <div className="space-y-1 text-sm">
                     <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Buyer & delivery</h4>
-                    <p><span className="text-muted-foreground">Phone:</span> {o.buyer_phone}</p>
-                    <p><span className="text-muted-foreground">Email:</span> {o.buyer_email || "—"}</p>
-                    <p><span className="text-muted-foreground">Passport:</span> {o.passport_number}</p>
-                    <p><span className="text-muted-foreground">Ticket:</span> {o.ticket_number}</p>
-                    <p><span className="text-muted-foreground">Flight:</span> {o.flight_from} → {o.flight_to} on {o.flight_date}</p>
-                    <p><span className="text-muted-foreground">Address:</span> {o.delivery_address}, {o.delivery_city}, {o.delivery_region}</p>
+                    <p><span className="text-muted-foreground">Phone:</span> {o.buyer_phone}{o.buyer_alt_phone ? ` / ${o.buyer_alt_phone}` : ""}</p>
+                    {o.buyer_email && <p><span className="text-muted-foreground">Email:</span> {o.buyer_email}</p>}
+                    <p><span className="text-muted-foreground">Address:</span> {o.delivery_address}{o.delivery_city ? `, ${o.delivery_city}` : ""}{o.delivery_region ? `, ${o.delivery_region}` : ""}</p>
                     <p><span className="text-muted-foreground">Payment:</span> {o.payment_method} ({o.payment_status})</p>
-                    {o.passport_image && <a href={o.passport_image} target="_blank" rel="noreferrer" className="text-xs text-primary underline">View passport</a>}
-                    {o.ticket_image && <span className="ml-3"><a href={o.ticket_image} target="_blank" rel="noreferrer" className="text-xs text-primary underline">View ticket</a></span>}
+                    {o.delivery_code && <p><span className="text-muted-foreground">Delivery code:</span> <span className="font-mono font-semibold tracking-widest">{o.delivery_code}</span></p>}
                     {o.payment_status === "manual_pending" && (
                       <button onClick={() => confirmManual(o)} className="mt-3 inline-flex items-center gap-1 rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white">
                         <CheckCircle2 className="h-3.5 w-3.5" /> Confirm manual payment
                       </button>
+                    )}
+                    {o.pick_request_status === "requested" && (
+                      <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
+                        <p className="text-xs font-medium text-amber-800">Pick request — picker reports {o.pick_request_trips || 0} prior Dubai trip(s)</p>
+                        <div className="mt-2 flex gap-2">
+                          <button onClick={() => reviewPick(o, true)} disabled={reviewing === o.id} className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50">
+                            <CheckCircle2 className="h-3.5 w-3.5" /> Approve picker
+                          </button>
+                          <button onClick={() => reviewPick(o, false)} disabled={reviewing === o.id} className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-rose-600 hover:bg-muted disabled:opacity-50">
+                            <XCircle className="h-3.5 w-3.5" /> Reject
+                          </button>
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>

@@ -25,6 +25,8 @@ import ManageOrders from '@/pages/admin/ManageOrders';
 import ManageTickets from '@/pages/admin/ManageTickets';
 import ManageTicketBookings from '@/pages/admin/ManageTicketBookings';
 import ManageVisaRequests from '@/pages/admin/ManageVisaRequests';
+import PriceControls from '@/pages/admin/PriceControls';
+import MyOrders from '@/pages/MyOrders';
 import Tickets from '@/pages/Tickets';
 import Visa from '@/pages/Visa';
 // Add page imports here
@@ -65,6 +67,7 @@ const AuthenticatedApp = () => {
       <Route path="/visa" element={<Visa />} />
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
         <Route path="/checkout" element={<Checkout />} />
+        <Route path="/orders" element={<MyOrders />} />
         <Route path="/picker" element={<PickerDashboard />} />
         <Route path="/picker/register" element={<BecomePicker />} />
         <Route path="/admin" element={<AdminLayout />}>
@@ -75,6 +78,7 @@ const AuthenticatedApp = () => {
           <Route path="tickets" element={<ManageTickets />} />
           <Route path="bookings" element={<ManageTicketBookings />} />
           <Route path="visas" element={<ManageVisaRequests />} />
+          <Route path="settings" element={<PriceControls />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />
