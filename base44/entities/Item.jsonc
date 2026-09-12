@@ -12,13 +12,31 @@
     },
     "price": {
       "type": "number",
-      "title": "Price (ETB)",
+      "title": "Price (ETB, manual)",
       "minimum": 0
     },
     "price_aed": {
       "type": "number",
-      "title": "Price in AED (Dirham)",
+      "title": "Price in AED (Dirham, manual)",
       "minimum": 0
+    },
+    "purchase_price": {
+      "type": "number",
+      "title": "Purchase price (AED)",
+      "minimum": 0
+    },
+    "shipping_fee": {
+      "type": "number",
+      "title": "Shipping fee (AED)",
+      "minimum": 0,
+      "default": 0
+    },
+    "profit_margin": {
+      "type": "number",
+      "title": "Profit margin (%)",
+      "minimum": 0,
+      "maximum": 500,
+      "default": 0
     },
     "discounted_price": {
       "type": "number",
@@ -85,7 +103,6 @@
   },
   "required": [
     "title",
-    "price",
     "category"
   ],
   "rls": {

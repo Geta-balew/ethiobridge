@@ -1,0 +1,48 @@
+{
+  "name": "Review",
+  "type": "object",
+  "properties": {
+    "order_id": {
+      "type": "string",
+      "title": "Order ID"
+    },
+    "picker_id": {
+      "type": "string",
+      "title": "Picker ID"
+    },
+    "buyer_name": {
+      "type": "string",
+      "title": "Buyer Name"
+    },
+    "rating": {
+      "type": "integer",
+      "title": "Rating (1-5)",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "comment": {
+      "type": "string",
+      "title": "Comment"
+    }
+  },
+  "required": [
+    "picker_id",
+    "rating"
+  ],
+  "rls": {
+    "read": {},
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

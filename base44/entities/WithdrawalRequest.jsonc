@@ -1,0 +1,69 @@
+{
+  "name": "WithdrawalRequest",
+  "type": "object",
+  "properties": {
+    "picker_id": {
+      "type": "string",
+      "title": "Picker ID"
+    },
+    "picker_name": {
+      "type": "string",
+      "title": "Picker Name"
+    },
+    "amount": {
+      "type": "number",
+      "title": "Amount (ETB)",
+      "minimum": 0
+    },
+    "bank_account": {
+      "type": "string",
+      "title": "Bank Account Details"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending",
+      "title": "Status"
+    },
+    "admin_note": {
+      "type": "string",
+      "title": "Admin Note"
+    }
+  },
+  "required": [
+    "picker_id",
+    "amount",
+    "bank_account"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.picker_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "data.picker_id": "{{user.id}}"
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

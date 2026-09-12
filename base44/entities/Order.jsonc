@@ -129,6 +129,22 @@
       "title": "Picker's prior Dubai trips",
       "default": 0
     },
+    "picker_ticket_number": {
+      "type": "string",
+      "title": "Picker ticket number"
+    },
+    "picker_airline": {
+      "type": "string",
+      "title": "Picker airline"
+    },
+    "picker_ticket_image": {
+      "type": "string",
+      "title": "Picker ticket screenshot"
+    },
+    "picker_arrival_location": {
+      "type": "string",
+      "title": "Addis Ababa arrival location"
+    },
     "picker_status": {
       "type": "string",
       "enum": [
@@ -145,6 +161,11 @@
     "delivery_code": {
       "type": "string",
       "title": "Delivery Confirmation Code"
+    },
+    "buyer_rated": {
+      "type": "boolean",
+      "title": "Buyer left a review",
+      "default": false
     },
     "status": {
       "type": "string",
