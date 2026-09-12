@@ -39,6 +39,11 @@
       "format": "date",
       "title": "Next Flight Date"
     },
+    "next_return_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Next Addis Ababa return date (standby)"
+    },
     "flight_ticket_image": {
       "type": "string",
       "title": "Flight Ticket Photo URL"
@@ -87,6 +92,11 @@
       "title": "Rating",
       "default": 0
     },
+    "reviews_count": {
+      "type": "integer",
+      "title": "Reviews Count",
+      "default": 0
+    },
     "total_deliveries": {
       "type": "integer",
       "title": "Total Deliveries",
@@ -132,9 +142,16 @@
       "created_by_id": "{{user.id}}"
     },
     "update": {
-      "user_condition": {
-        "role": "admin"
-      }
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
     },
     "delete": {
       "user_condition": {
