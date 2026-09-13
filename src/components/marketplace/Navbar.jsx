@@ -3,9 +3,13 @@ import { ShoppingCart, Search, Plane, LayoutDashboard, User, LogOut, FileText, M
 import { useCart } from "@/context/CartContext";
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { useLang } from "@/context/LanguageContext";
+import ThemeToggle from "@/components/ThemeToggle";
+import LanguageToggle from "@/components/LanguageToggle";
 
 export default function Navbar({ onSearch }) {
   const { count } = useCart();
+  const { t } = useLang();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [user, setUser] = useState(null);
@@ -26,12 +30,12 @@ export default function Navbar({ onSearch }) {
   };
 
   const links = [
-    { to: "/tickets", label: "Tickets", icon: Plane, show: true },
-    { to: "/visa", label: "Visa", icon: FileText, show: true },
-    { to: "/pickers", label: "Pickers", icon: Users, show: true },
-    { to: "/orders", label: "My Orders", icon: Package, show: !!user },
-    { to: "/picker", label: "Picker", icon: User, show: !!user },
-    { to: "/admin", label: "Admin", icon: LayoutDashboard, show: user?.role === "admin" },
+    { to: "/tickets", label: t("tickets"), icon: Plane, show: true },
+    { to: "/visa", label: t("visa"), icon: FileText, show: true },
+    { to: "/pickers", label: t("pickers"), icon: Users, show: true },
+    { to: "/orders", label: t("my_orders"), icon: Package, show: !!user },
+    { to: "/picker", label: t("picker"), icon: User, show: !!user },
+    { to: "/admin", label: t("admin"), icon: LayoutDashboard, show: user?.role === "admin" },
   ].filter((l) => l.show);
 
   return (
@@ -54,7 +58,7 @@ export default function Navbar({ onSearch }) {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search items…"
+            placeholder={t("search_placeholder")}
             className="h-10 w-full rounded-full border border-input bg-muted/40 pl-9 pr-4 text-sm outline-none transition focus:border-ring focus:bg-background"
           />
         </form>
@@ -74,12 +78,14 @@ export default function Navbar({ onSearch }) {
             )}
           </div>
 
+          <ThemeToggle />
+          <LanguageToggle />
           <button
             onClick={() => navigate("/checkout")}
             className="relative inline-flex h-10 items-center gap-2 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
           >
             <ShoppingCart className="h-4 w-4" />
-            <span className="hidden sm:inline">Cart</span>
+            <span className="hidden sm:inline">{t("cart")}</span>
             {count > 0 && (
               <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1 text-[11px] font-bold text-white">
                 {count}

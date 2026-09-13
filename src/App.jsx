@@ -7,6 +7,8 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import { CartProvider } from '@/context/CartContext';
+import { ThemeProvider } from '@/context/ThemeContext';
+import { LanguageProvider } from '@/context/LanguageContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Home from '@/pages/Home';
 import ItemDetail from '@/pages/ItemDetail';
@@ -97,15 +99,19 @@ function App() {
 
   return (
     <AuthProvider>
-      <QueryClientProvider client={queryClientInstance}>
-        <CartProvider>
-          <Router>
-            <ScrollToTop />
-            <AuthenticatedApp />
-          </Router>
-          <Toaster />
-        </CartProvider>
-      </QueryClientProvider>
+      <ThemeProvider>
+        <LanguageProvider>
+          <QueryClientProvider client={queryClientInstance}>
+            <CartProvider>
+              <Router>
+                <ScrollToTop />
+                <AuthenticatedApp />
+              </Router>
+              <Toaster />
+            </CartProvider>
+          </QueryClientProvider>
+        </LanguageProvider>
+      </ThemeProvider>
     </AuthProvider>
   )
 }

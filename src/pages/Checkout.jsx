@@ -5,6 +5,7 @@ import { useCart } from "@/context/CartContext";
 import { Image } from "@/components/ui/image";
 import { useToast } from "@/components/ui/use-toast";
 import { ArrowLeft, Loader2, MapPin, CreditCard, ShieldCheck, Trash2, KeyRound } from "lucide-react";
+import { jsPDF } from "jspdf";
 
 const REGIONS = [
   "Addis Ababa", "Amhara", "Oromia", "Tigray", "SNNPR", "Somali", "Afar",
@@ -295,6 +296,38 @@ function OrderConfirmation({ status, orderId }) {
   }, [orderId]);
 
   const isPaid = status === "chapa_return";
+
+  const downloadOrder = () => {
+    if (!order) return;
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text("EthioBridge — Order Receipt", 14, 20);
+    doc.setFontSize(11);
+    doc.text(`Order ref: ${orderId}`, 14, 32);
+    doc.text(`Date: ${new Date(order.created_date).toLocaleString()}`, 14, 40);
+    doc.text(`Delivery code: ${order.delivery_code || "—"}`, 14, 48);
+    let y = 60;
+    doc.setFontSize(12);
+    doc.text("Items:", 14, y); y += 8;
+    doc.setFontSize(10);
+    (order.items || []).forEach((it) => {
+      doc.text(`${it.title} x${it.quantity} — ${Number(it.price).toLocaleString()} ETB`, 18, y); y += 7;
+    });
+    y += 2;
+    doc.setFontSize(11);
+    doc.text(`Subtotal: ${Number(order.subtotal).toLocaleString()} ETB`, 14, y); y += 7;
+    doc.text(`Delivery fee: ${Number(order.delivery_fee).toLocaleString()} ETB`, 14, y); y += 7;
+    doc.text(`Picker fee: ${Number(order.picker_fee).toLocaleString()} ETB`, 14, y); y += 7;
+    if (order.coupon_discount) { doc.text(`Coupon (${order.coupon_code}): -${Number(order.coupon_discount).toLocaleString()} ETB`, 14, y); y += 7; }
+    doc.setFontSize(13);
+    doc.text(`Total: ${Number(order.total).toLocaleString()} ETB`, 14, y); y += 10;
+    doc.setFontSize(10);
+    doc.text(`Buyer: ${order.buyer_name}`, 14, y); y += 6;
+    doc.text(`Phone: ${order.buyer_phone}`, 14, y); y += 6;
+    doc.text(`Address: ${order.delivery_address}, ${order.delivery_city || ""}, ${order.delivery_region || ""}`, 14, y); y += 6;
+    doc.text(`Payment: ${order.payment_method} (${order.payment_status})`, 14, y);
+    doc.save(`ethiobridge-order-${String(orderId).slice(-8)}.pdf`);
+  };
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-4 text-center">
       <div className={`flex h-16 w-16 items-center justify-center rounded-full ${isPaid ? "bg-emerald-100" : "bg-amber-100"}`}>
@@ -312,8 +345,9 @@ function OrderConfirmation({ status, orderId }) {
         </div>
       )}
       {orderId && <p className="mt-3 text-xs text-muted-foreground">Order ref: {orderId.slice(-8).toUpperCase()}</p>}
-      <div className="mt-6 flex gap-3">
+      <div className="mt-6 flex flex-wrap justify-center gap-3">
         <Link to="/orders" className="rounded-full bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground">Track my order</Link>
+        <button onClick={downloadOrder} disabled={!order} className="rounded-full border border-border px-6 py-2.5 text-sm font-medium hover:bg-muted disabled:opacity-50">Download order details</button>
         <Link to="/" className="rounded-full border border-border px-6 py-2.5 text-sm font-medium hover:bg-muted">Back to marketplace</Link>
       </div>
     </div>
