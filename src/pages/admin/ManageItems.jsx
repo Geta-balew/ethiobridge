@@ -3,10 +3,12 @@ import { base44 } from "@/api/base44Client";
 import { Image as Img } from "@/components/ui/image";
 import { useToast } from "@/components/ui/use-toast";
 import { Plus, Pencil, Trash2, X, Upload, Loader2, Zap, Tag, CheckCircle2, Search } from "lucide-react";
+import { computePrice } from "@/utils/pricing";
 
 const CATEGORIES = ["Electronics", "Fashion", "Home & Living", "Beauty & Health", "Groceries", "Kids", "Other"];
 const empty = {
-  title: "", description: "", price: "", price_aed: "", discounted_price: "", category: "Electronics",
+  title: "", description: "", price: "", price_aed: "", purchase_price: "", shipping_fee: "", profit_margin: "",
+  discounted_price: "", category: "Electronics",
   stock: 1, images: [], is_offer: false, is_deal: false, offer_label: "", status: "draft",
 };
 
@@ -18,11 +20,16 @@ export default function ManageItems() {
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("All");
+  const [setting, setSetting] = useState(null);
   const { toast } = useToast();
 
   const load = async () => {
-    const data = await base44.entities.Item.list("-created_date", 100);
+    const [data, settings] = await Promise.all([
+      base44.entities.Item.list("-created_date", 100),
+      base44.entities.AppSetting.list("-created_date", 1),
+    ]);
     setItems(data);
+    setSetting(settings[0] || null);
   };
   useEffect(() => { load().catch(() => setItems([])); }, []);
 
@@ -45,20 +52,23 @@ export default function ManageItems() {
   const openNew = () => { setEditing("new"); setForm(empty); };
   const openEdit = (item) => {
     setEditing(item.id);
-    setForm({ ...empty, ...item, price: item.price ?? "", discounted_price: item.discounted_price ?? "" });
+    setForm({ ...empty, ...item, price: item.price ?? "", price_aed: item.price_aed ?? "", purchase_price: item.purchase_price ?? "", shipping_fee: item.shipping_fee ?? "", profit_margin: item.profit_margin ?? "", discounted_price: item.discounted_price ?? "" });
   };
 
   const save = async () => {
-    if (!form.title || !form.price) {
-      toast({ title: "Title and price are required", variant: "destructive" });
+    if (!form.title) {
+      toast({ title: "Title is required", variant: "destructive" });
       return;
     }
     setSaving(true);
     try {
       const payload = {
         ...form,
-        price: Number(form.price),
+        price: form.price ? Number(form.price) : null,
         price_aed: form.price_aed ? Number(form.price_aed) : null,
+        purchase_price: form.purchase_price ? Number(form.purchase_price) : null,
+        shipping_fee: form.shipping_fee ? Number(form.shipping_fee) : 0,
+        profit_margin: form.profit_margin ? Number(form.profit_margin) : 0,
         discounted_price: form.discounted_price ? Number(form.discounted_price) : null,
         stock: Number(form.stock) || 0,
       };
@@ -137,7 +147,7 @@ export default function ManageItems() {
                   {item.is_deal && <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700"><Zap className="h-3 w-3" />Deal</span>}
                   {item.is_offer && <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-semibold text-rose-700"><Tag className="h-3 w-3" />Offer</span>}
                 </div>
-                <p className="text-sm text-muted-foreground">{Number(item.price).toLocaleString()} ETB · Stock {item.stock} · <span className="capitalize">{item.status}</span></p>
+                <p className="text-sm text-muted-foreground">{computePrice(item, setting).toLocaleString()} ETB · Stock {item.stock} · <span className="capitalize">{item.status}</span></p>
               </div>
               {item.status !== "published" && (
                 <button onClick={() => publish(item)} className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white">
@@ -164,9 +174,20 @@ export default function ManageItems() {
             <div className="space-y-4">
               <L label="Title"><input className={inp} value={form.title} onChange={(e) => set("title", e.target.value)} /></L>
               <L label="Description"><textarea className={inp + " min-h-20"} value={form.description} onChange={(e) => set("description", e.target.value)} /></L>
+              <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-3">
+                <p className="mb-2 text-xs font-semibold text-amber-800">Dirham pricing module</p>
+                <div className="grid grid-cols-3 gap-2">
+                  <L label="Purchase (AED)"><input type="number" className={inp} value={form.purchase_price} onChange={(e) => set("purchase_price", e.target.value)} placeholder="0" /></L>
+                  <L label="Shipping (AED)"><input type="number" className={inp} value={form.shipping_fee} onChange={(e) => set("shipping_fee", e.target.value)} placeholder="0" /></L>
+                  <L label="Profit (%)"><input type="number" className={inp} value={form.profit_margin} onChange={(e) => set("profit_margin", e.target.value)} placeholder="0" /></L>
+                </div>
+                <p className="mt-2 text-xs text-amber-800">
+                  Final: <span className="font-semibold">{(() => { const aed = (Number(form.purchase_price) || 0) + (Number(form.shipping_fee) || 0); const m = Number(form.profit_margin) || 0; const f = aed * (1 + m / 100); return f ? `${f.toFixed(2)} AED · ${Math.round(f * (Number(setting?.exchange_rate) || 52)).toLocaleString()} ETB` : "—"; })()}</span>
+                </p>
+              </div>
               <div className="grid grid-cols-2 gap-3">
-                <L label="Price (ETB)"><input type="number" className={inp} value={form.price} onChange={(e) => set("price", e.target.value)} /></L>
-                <L label="Price in AED (Dirham)"><input type="number" className={inp} value={form.price_aed} onChange={(e) => set("price_aed", e.target.value)} /></L>
+                <L label="Price (ETB, manual)"><input type="number" className={inp} value={form.price} onChange={(e) => set("price", e.target.value)} /></L>
+                <L label="Price in AED (manual)"><input type="number" className={inp} value={form.price_aed} onChange={(e) => set("price_aed", e.target.value)} /></L>
                 <L label="Discounted price (ETB)"><input type="number" className={inp} value={form.discounted_price} onChange={(e) => set("discounted_price", e.target.value)} /></L>
               </div>
               <div className="grid grid-cols-2 gap-3">

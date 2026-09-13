@@ -34,6 +34,8 @@ export default function Checkout() {
   const [couponApplied, setCouponApplied] = useState(null);
   const [couponMsg, setCouponMsg] = useState("");
   const [applyingCoupon, setApplyingCoupon] = useState(false);
+  const [pickers, setPickers] = useState([]);
+  const [preferredPicker, setPreferredPicker] = useState("");
 
   const deliveryFee = subtotal > 0 ? 150 : 0;
   const pickerFee = subtotal > 0 ? Math.max(500, Math.round(subtotal * 0.1)) : 0;
@@ -46,6 +48,12 @@ export default function Checkout() {
     setCouponApplied(null);
     setCouponMsg("");
   }, [subtotal]);
+
+  useEffect(() => {
+    base44.entities.Picker.filter({ verification_status: "verified" }, "-rating", 50)
+      .then(setPickers)
+      .catch(() => setPickers([]));
+  }, []);
 
   const applyCoupon = async () => {
     if (!couponCode.trim()) return;
@@ -112,6 +120,7 @@ export default function Checkout() {
         delivery_region: form.delivery_region,
         payment_method: form.payment_method,
         payment_status: form.payment_method === "manual" ? "manual_pending" : "pending",
+        preferred_picker_id: preferredPicker || null,
         delivery_code: deliveryCode,
         status: "placed",
       });
@@ -221,6 +230,12 @@ export default function Checkout() {
                 <Field label="Region">
                   <select className={inputCls} value={form.delivery_region} onChange={(e) => set("delivery_region", e.target.value)}>
                     {REGIONS.map((r) => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                </Field>
+                <Field label="Preferred picker (optional)" className="sm:col-span-2">
+                  <select className={inputCls} value={preferredPicker} onChange={(e) => setPreferredPicker(e.target.value)}>
+                    <option value="">No preference — assign automatically</option>
+                    {pickers.map((p) => <option key={p.id} value={p.created_by_id}>{p.full_name} — {p.rating?.toFixed(1) || "new"} ★ ({p.total_deliveries || 0} deliveries)</option>)}
                   </select>
                 </Field>
               </div>

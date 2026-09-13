@@ -9,7 +9,7 @@ export default function BecomePicker() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [form, setForm] = useState({
-    full_name: "", phone: "", email: "", passport_number: "", national_id_number: "", bio: "", bank_account: "",
+    full_name: "", phone: "", email: "", passport_number: "", national_id_number: "", bio: "",
     flight_date: "", previous_trips_count: 0, first_time_status: "first_time_traveler",
   });
   const [passportImg, setPassportImg] = useState("");
@@ -89,7 +89,6 @@ export default function BecomePicker() {
             <FL label="Full name" required><input className={inp} value={form.full_name} onChange={(e) => set("full_name", e.target.value)} /></FL>
             <FL label="Phone" required><input className={inp} value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="+971…" /></FL>
             <FL label="Email"><input className={inp} value={form.email} onChange={(e) => set("email", e.target.value)} /></FL>
-            <FL label="Bank account (for payout)"><input className={inp} value={form.bank_account} onChange={(e) => set("bank_account", e.target.value)} /></FL>
             <FL label="Passport number" required><input className={inp} value={form.passport_number} onChange={(e) => set("passport_number", e.target.value)} /></FL>
             <FL label="Ethiopian national ID number" required><input className={inp} value={form.national_id_number} onChange={(e) => set("national_id_number", e.target.value)} /></FL>
             <FL label="Next flight date" required><input type="date" className={inp} value={form.flight_date} onChange={(e) => set("flight_date", e.target.value)} /></FL>

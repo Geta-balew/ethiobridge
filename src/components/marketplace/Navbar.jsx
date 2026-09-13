@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingCart, Search, Plane, LayoutDashboard, User, LogOut, FileText, Menu, X, Package } from "lucide-react";
+import { ShoppingCart, Search, Plane, LayoutDashboard, User, LogOut, FileText, Menu, X, Package, Users } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
@@ -28,6 +28,7 @@ export default function Navbar({ onSearch }) {
   const links = [
     { to: "/tickets", label: "Tickets", icon: Plane, show: true },
     { to: "/visa", label: "Visa", icon: FileText, show: true },
+    { to: "/pickers", label: "Pickers", icon: Users, show: true },
     { to: "/orders", label: "My Orders", icon: Package, show: !!user },
     { to: "/picker", label: "Picker", icon: User, show: !!user },
     { to: "/admin", label: "Admin", icon: LayoutDashboard, show: user?.role === "admin" },

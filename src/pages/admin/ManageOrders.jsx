@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Image as Img } from "@/components/ui/image";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, ChevronDown, ChevronUp, CheckCircle2, XCircle } from "lucide-react";
+import { Loader2, ChevronDown, ChevronUp, CheckCircle2, XCircle, UserCog, Plane, MapPin, Ticket } from "lucide-react";
 
 const PAYMENT_BADGE = {
   paid: "bg-emerald-100 text-emerald-700",
@@ -22,11 +22,21 @@ const PICKER_BADGE = {
 
 export default function ManageOrders() {
   const [orders, setOrders] = useState(null);
+  const [pickers, setPickers] = useState([]);
   const [open, setOpen] = useState(null);
   const [reviewing, setReviewing] = useState(null);
+  const [assigning, setAssigning] = useState(null);
+  const [assignPicker, setAssignPicker] = useState({});
   const { toast } = useToast();
 
-  const load = async () => setOrders(await base44.entities.Order.list("-created_date", 100));
+  const load = async () => {
+    const [o, p] = await Promise.all([
+      base44.entities.Order.list("-created_date", 100),
+      base44.entities.Picker.filter({ verification_status: "verified" }, "-rating", 100),
+    ]);
+    setOrders(o);
+    setPickers(p);
+  };
   useEffect(() => { load().catch(() => setOrders([])); }, []);
 
   const confirmManual = async (o) => {
@@ -45,6 +55,27 @@ export default function ManageOrders() {
       toast({ title: "Failed", description: e.response?.data?.error || e.message, variant: "destructive" });
     } finally {
       setReviewing(null);
+    }
+  };
+
+  const assignManual = async (o) => {
+    const pickerUserId = assignPicker[o.id];
+    if (!pickerUserId) { toast({ title: "Select a picker first", variant: "destructive" }); return; }
+    setAssigning(o.id);
+    try {
+      await base44.entities.Order.update(o.id, {
+        picker_id: pickerUserId,
+        requested_picker_id: pickerUserId,
+        pick_request_status: "approved",
+        picker_status: "claimed",
+      });
+      toast({ title: "Picker assigned manually" });
+      setAssignPicker((s) => ({ ...s, [o.id]: "" }));
+      await load();
+    } catch (e) {
+      toast({ title: "Failed", description: e.message, variant: "destructive" });
+    } finally {
+      setAssigning(null);
     }
   };
 
@@ -83,6 +114,7 @@ export default function ManageOrders() {
                       <div className="flex justify-between text-muted-foreground"><span>Subtotal</span><span>{Number(o.subtotal).toLocaleString()}</span></div>
                       <div className="flex justify-between text-muted-foreground"><span>Delivery</span><span>{Number(o.delivery_fee).toLocaleString()}</span></div>
                       <div className="flex justify-between text-muted-foreground"><span>Picker fee</span><span>{Number(o.picker_fee).toLocaleString()}</span></div>
+                      {o.coupon_discount > 0 && <div className="flex justify-between text-rose-600"><span>Coupon ({o.coupon_code})</span><span>−{Number(o.coupon_discount).toLocaleString()}</span></div>}
                       <div className="flex justify-between font-semibold"><span>Total</span><span>{Number(o.total).toLocaleString()} ETB</span></div>
                     </div>
                   </div>
@@ -98,6 +130,18 @@ export default function ManageOrders() {
                         <CheckCircle2 className="h-3.5 w-3.5" /> Confirm manual payment
                       </button>
                     )}
+
+                    {/* Picker pickup details */}
+                    {(o.picker_ticket_number || o.picker_airline || o.picker_arrival_location) && (
+                      <div className="mt-3 rounded-lg border border-indigo-200 bg-indigo-50 p-3">
+                        <p className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-indigo-800"><Ticket className="h-3.5 w-3.5" /> Picker pickup details</p>
+                        <p className="text-xs text-indigo-800">Ticket #: {o.picker_ticket_number || "—"}</p>
+                        <p className="text-xs text-indigo-800">Airline: {o.picker_airline || "—"}</p>
+                        <p className="flex items-center gap-1 text-xs text-indigo-800"><MapPin className="h-3 w-3" /> {o.picker_arrival_location || "—"}</p>
+                        {o.picker_ticket_image && <a href={o.picker_ticket_image} target="_blank" rel="noreferrer" className="mt-1 inline-block"><div className="h-16 w-24 overflow-hidden rounded border border-indigo-200"><Img src={o.picker_ticket_image} alt="ticket" className="h-full w-full object-cover" fittingType="fill" /></div></a>}
+                      </div>
+                    )}
+
                     {o.pick_request_status === "requested" && (
                       <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
                         <p className="text-xs font-medium text-amber-800">Pick request — picker reports {o.pick_request_trips || 0} prior Dubai trip(s)</p>
@@ -109,6 +153,24 @@ export default function ManageOrders() {
                             <XCircle className="h-3.5 w-3.5" /> Reject
                           </button>
                         </div>
+                      </div>
+                    )}
+
+                    {/* Manual picker assignment */}
+                    {o.picker_status === "unassigned" && o.pick_request_status !== "requested" && (
+                      <div className="mt-3 rounded-lg border border-border bg-muted/30 p-3">
+                        <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold"><UserCog className="h-3.5 w-3.5" /> Manual picker assignment</p>
+                        <select value={assignPicker[o.id] || ""} onChange={(e) => setAssignPicker((s) => ({ ...s, [o.id]: e.target.value }))} className="h-9 w-full rounded-lg border border-input bg-background px-2 text-sm outline-none focus:border-ring">
+                          <option value="">Select a verified picker…</option>
+                          {pickers.map((p) => (
+                            <option key={p.id} value={p.created_by_id}>
+                              {p.full_name} {p.next_return_date ? `(return ${p.next_return_date})` : ""} — {p.rating?.toFixed(1) || "new"} ★
+                            </option>
+                          ))}
+                        </select>
+                        <button onClick={() => assignManual(o)} disabled={assigning === o.id} className="mt-2 inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-50">
+                          {assigning === o.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />} Assign picker
+                        </button>
                       </div>
                     )}
                   </div>

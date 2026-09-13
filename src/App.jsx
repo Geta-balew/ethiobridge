@@ -26,10 +26,12 @@ import ManageTickets from '@/pages/admin/ManageTickets';
 import ManageTicketBookings from '@/pages/admin/ManageTicketBookings';
 import ManageVisaRequests from '@/pages/admin/ManageVisaRequests';
 import ManageAnnouncements from '@/pages/admin/ManageAnnouncements';
+import ManageWithdrawals from '@/pages/admin/ManageWithdrawals';
 import PriceControls from '@/pages/admin/PriceControls';
 import MyOrders from '@/pages/MyOrders';
 import Tickets from '@/pages/Tickets';
 import Visa from '@/pages/Visa';
+import Pickers from '@/pages/Pickers';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -66,6 +68,7 @@ const AuthenticatedApp = () => {
       <Route path="/item/:id" element={<ItemDetail />} />
       <Route path="/tickets" element={<Tickets />} />
       <Route path="/visa" element={<Visa />} />
+      <Route path="/pickers" element={<Pickers />} />
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/orders" element={<MyOrders />} />
@@ -80,6 +83,7 @@ const AuthenticatedApp = () => {
           <Route path="bookings" element={<ManageTicketBookings />} />
           <Route path="visas" element={<ManageVisaRequests />} />
           <Route path="announcements" element={<ManageAnnouncements />} />
+          <Route path="withdrawals" element={<ManageWithdrawals />} />
           <Route path="settings" element={<PriceControls />} />
         </Route>
       </Route>
