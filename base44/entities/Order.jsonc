@@ -105,6 +105,10 @@
       "type": "string",
       "title": "Chapa Transaction Reference"
     },
+    "preferred_picker_id": {
+      "type": "string",
+      "title": "Preferred Picker (user id)"
+    },
     "picker_id": {
       "type": "string",
       "title": "Assigned Picker User ID"
