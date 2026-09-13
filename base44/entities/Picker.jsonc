@@ -129,6 +129,9 @@
     "read": {
       "$or": [
         {
+          "data.verification_status": "verified"
+        },
+        {
           "created_by_id": "{{user.id}}"
         },
         {
