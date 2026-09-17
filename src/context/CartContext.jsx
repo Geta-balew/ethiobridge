@@ -31,6 +31,7 @@ export function CartProvider({ children }) {
           item_id: item.id,
           title: item.title,
           price: item.discounted_price || item.price,
+          picker_fee: item.picker_fee || 0,
           quantity: qty,
           image: item.images?.[0] || "",
         },

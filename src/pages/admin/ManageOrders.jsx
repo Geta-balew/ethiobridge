@@ -27,6 +27,7 @@ export default function ManageOrders() {
   const [reviewing, setReviewing] = useState(null);
   const [assigning, setAssigning] = useState(null);
   const [assignPicker, setAssignPicker] = useState({});
+  const [statusFilter, setStatusFilter] = useState("All");
   const { toast } = useToast();
 
   const load = async () => {
@@ -79,13 +80,28 @@ export default function ManageOrders() {
     }
   };
 
+  const matchesFilter = (o) => {
+    if (statusFilter === "All") return true;
+    if (statusFilter === "New Orders") return o.status === "placed" && o.payment_status === "manual_pending";
+    if (statusFilter === "Pickup Requested") return o.pick_request_status === "requested";
+    if (statusFilter === "Delivered") return o.picker_status === "delivered";
+    if (statusFilter === "Completed") return o.status === "delivered";
+    return true;
+  };
+  const filteredOrders = (orders || []).filter(matchesFilter);
+
   if (orders === null) return <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold tracking-tight">Orders</h1>
+      <h1 className="mb-4 text-2xl font-semibold tracking-tight">Orders</h1>
+      <div className="mb-6 flex flex-wrap gap-2">
+        {["All", "New Orders", "Pickup Requested", "Delivered", "Completed"].map((f) => (
+          <button key={f} onClick={() => setStatusFilter(f)} className={`rounded-full px-3.5 py-1.5 text-sm transition ${statusFilter === f ? "bg-primary text-primary-foreground" : "border border-border bg-card hover:bg-muted"}`}>{f}</button>
+        ))}
+      </div>
       <div className="grid gap-3">
-        {orders.map((o) => (
+        {filteredOrders.map((o) => (
           <div key={o.id} className="rounded-xl border border-border bg-card">
             <button onClick={() => setOpen(open === o.id ? null : o.id)} className="flex w-full items-center gap-3 p-4 text-left">
               <div className="flex-1">
@@ -124,6 +140,12 @@ export default function ManageOrders() {
                     {o.buyer_email && <p><span className="text-muted-foreground">Email:</span> {o.buyer_email}</p>}
                     <p><span className="text-muted-foreground">Address:</span> {o.delivery_address}{o.delivery_city ? `, ${o.delivery_city}` : ""}{o.delivery_region ? `, ${o.delivery_region}` : ""}</p>
                     <p><span className="text-muted-foreground">Payment:</span> {o.payment_method} ({o.payment_status})</p>
+                    {o.payment_screenshot && (
+                      <div className="mt-2">
+                        <p className="mb-1 text-xs text-muted-foreground">Payment screenshot:</p>
+                        <a href={o.payment_screenshot} target="_blank" rel="noreferrer"><div className="h-24 w-40 overflow-hidden rounded border border-border"><Img src={o.payment_screenshot} alt="payment" className="h-full w-full object-cover" fittingType="fill" /></div></a>
+                      </div>
+                    )}
                     {o.delivery_code && <p><span className="text-muted-foreground">Delivery code:</span> <span className="font-mono font-semibold tracking-widest">{o.delivery_code}</span></p>}
                     {o.payment_status === "manual_pending" && (
                       <button onClick={() => confirmManual(o)} className="mt-3 inline-flex items-center gap-1 rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white">
@@ -179,7 +201,7 @@ export default function ManageOrders() {
             )}
           </div>
         ))}
-        {orders.length === 0 && <p className="py-12 text-center text-muted-foreground">No orders yet.</p>}
+        {filteredOrders.length === 0 && <p className="py-12 text-center text-muted-foreground">No orders found.</p>}
       </div>
     </div>
   );

@@ -4,12 +4,19 @@ import { base44 } from "@/api/base44Client";
 import { useCart } from "@/context/CartContext";
 import { Image } from "@/components/ui/image";
 import { useToast } from "@/components/ui/use-toast";
-import { ArrowLeft, Loader2, MapPin, CreditCard, ShieldCheck, Trash2, KeyRound } from "lucide-react";
+import { ArrowLeft, Loader2, MapPin, ShieldCheck, Trash2, KeyRound, Upload, Building2 } from "lucide-react";
 import { jsPDF } from "jspdf";
+import { deliveryFeeFor } from "@/utils/pricing";
 
 const REGIONS = [
-  "Addis Ababa", "Amhara", "Oromia", "Tigray", "SNNPR", "Somali", "Afar",
+  "Addis Ababa", "Sidama", "Amhara", "Oromia", "Tigray", "SNNPR", "Somali", "Afar",
   "Benishangul-Gumuz", "Gambela", "Harari", "Dire Dawa",
+];
+
+const BANK_ACCOUNTS = [
+  { name: "Commercial Bank of Ethiopia", account: "1000 2345 6789 012", holder: "EthioBridge Trading" },
+  { name: "Bank of Abyssinia", account: "8795 4321 0099", holder: "EthioBridge Trading" },
+  { name: "Telebirr", account: "0911 234 567", holder: "EthioBridge Trading" },
 ];
 
 const genCode = () => String(Math.floor(1000 + Math.random() * 9000));
@@ -20,14 +27,8 @@ export default function Checkout() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    buyer_name: "",
-    buyer_phone: "",
-    buyer_alt_phone: "",
-    buyer_email: "",
-    delivery_address: "",
-    delivery_city: "",
-    delivery_region: "Addis Ababa",
-    payment_method: "chapa",
+    buyer_name: "", buyer_phone: "", buyer_alt_phone: "", buyer_email: "",
+    delivery_address: "", delivery_city: "", delivery_region: "Addis Ababa",
   });
   const [submitting, setSubmitting] = useState(false);
   const [couponCode, setCouponCode] = useState("");
@@ -37,29 +38,38 @@ export default function Checkout() {
   const [applyingCoupon, setApplyingCoupon] = useState(false);
   const [pickers, setPickers] = useState([]);
   const [preferredPicker, setPreferredPicker] = useState("");
+  const [paymentScreenshot, setPaymentScreenshot] = useState("");
+  const [uploadingScreenshot, setUploadingScreenshot] = useState(false);
 
-  const deliveryFee = subtotal > 0 ? 150 : 0;
-  const pickerFee = subtotal > 0 ? Math.max(500, Math.round(subtotal * 0.1)) : 0;
-  const total = subtotal - couponDiscount + deliveryFee + pickerFee;
+  const totalQty = items.reduce((s, i) => s + i.quantity, 0);
+  const deliveryFee = deliveryFeeFor(form.delivery_region, totalQty);
+  const orderPickerFee = items.reduce((s, i) => s + (i.picker_fee || 0) * i.quantity, 0);
+  const total = subtotal - couponDiscount + deliveryFee;
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
-  useEffect(() => {
-    setCouponDiscount(0);
-    setCouponApplied(null);
-    setCouponMsg("");
-  }, [subtotal]);
+  useEffect(() => { setCouponDiscount(0); setCouponApplied(null); setCouponMsg(""); }, [subtotal]);
 
   useEffect(() => {
     base44.entities.Picker.filter({ verification_status: "verified" }, "-rating", 50)
-      .then(setPickers)
-      .catch(() => setPickers([]));
+      .then(setPickers).catch(() => setPickers([]));
   }, []);
+
+  const uploadScreenshot = async (file) => {
+    setUploadingScreenshot(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadPublicFile({ file });
+      setPaymentScreenshot(file_url);
+    } catch (e) {
+      toast({ title: "Upload failed", description: e.message, variant: "destructive" });
+    } finally {
+      setUploadingScreenshot(false);
+    }
+  };
 
   const applyCoupon = async () => {
     if (!couponCode.trim()) return;
-    setApplyingCoupon(true);
-    setCouponMsg("");
+    setApplyingCoupon(true); setCouponMsg("");
     try {
       const res = await base44.functions.invoke("validateCoupon", { code: couponCode.trim() });
       const data = res.data || res;
@@ -68,17 +78,13 @@ export default function Checkout() {
         setCouponApplied({ code: data.code, percent: data.discount_percent });
         setCouponMsg(`${data.discount_percent}% discount applied`);
       } else {
-        setCouponDiscount(0);
-        setCouponApplied(null);
+        setCouponDiscount(0); setCouponApplied(null);
         setCouponMsg(data.message || "Invalid coupon");
       }
     } catch (e) {
-      setCouponDiscount(0);
-      setCouponApplied(null);
+      setCouponDiscount(0); setCouponApplied(null);
       setCouponMsg(e.response?.data?.message || e.message || "Invalid coupon");
-    } finally {
-      setApplyingCoupon(false);
-    }
+    } finally { setApplyingCoupon(false); }
   };
 
   const validate = () => {
@@ -86,81 +92,40 @@ export default function Checkout() {
     if (!form.buyer_name.trim()) return "Please enter your full name.";
     if (!form.buyer_phone.trim()) return "Please enter your phone number.";
     if (!form.delivery_address.trim()) return "Please enter your delivery address.";
+    if (!paymentScreenshot) return "Please upload your payment screenshot.";
     return null;
   };
 
   const submit = async () => {
     const err = validate();
-    if (err) {
-      toast({ title: "Missing information", description: err, variant: "destructive" });
-      return;
-    }
+    if (err) { toast({ title: "Missing information", description: err, variant: "destructive" }); return; }
     setSubmitting(true);
     try {
       const deliveryCode = genCode();
       const order = await base44.entities.Order.create({
-        items: items.map((i) => ({
-          item_id: i.item_id,
-          title: i.title,
-          price: i.price,
-          quantity: i.quantity,
-          image: i.image,
-        })),
-        subtotal,
-        delivery_fee: deliveryFee,
-        picker_fee: pickerFee,
-        coupon_code: couponApplied?.code || "",
-        coupon_discount: couponDiscount,
-        total,
-        buyer_name: form.buyer_name,
-        buyer_phone: form.buyer_phone,
-        buyer_alt_phone: form.buyer_alt_phone,
-        buyer_email: form.buyer_email,
-        delivery_address: form.delivery_address,
-        delivery_city: form.delivery_city,
-        delivery_region: form.delivery_region,
-        payment_method: form.payment_method,
-        payment_status: form.payment_method === "manual" ? "manual_pending" : "pending",
+        items: items.map((i) => ({ item_id: i.item_id, title: i.title, price: i.price, quantity: i.quantity, image: i.image })),
+        subtotal, delivery_fee: deliveryFee, picker_fee: orderPickerFee,
+        coupon_code: couponApplied?.code || "", coupon_discount: couponDiscount,
+        total, buyer_name: form.buyer_name, buyer_phone: form.buyer_phone,
+        buyer_alt_phone: form.buyer_alt_phone, buyer_email: form.buyer_email,
+        delivery_address: form.delivery_address, delivery_city: form.delivery_city, delivery_region: form.delivery_region,
+        payment_method: "manual", payment_status: "manual_pending",
+        payment_screenshot: paymentScreenshot,
         preferred_picker_id: preferredPicker || null,
-        delivery_code: deliveryCode,
-        status: "placed",
+        delivery_code: deliveryCode, status: "placed",
       });
-
-      if (form.payment_method === "manual") {
-        clearCart();
-        navigate(`/checkout?status=manual&order=${order.id}`);
-        return;
-      }
-
-      const returnUrl = `${window.location.origin}/checkout?status=chapa_return&order=${order.id}`;
-      const res = await base44.functions.invoke("initializeChapaPayment", {
-        order_id: order.id,
-        amount: total,
-        buyer_email: form.buyer_email,
-        buyer_name: form.buyer_name,
-        return_url: returnUrl,
-      });
-      const data = res.data || res;
-      if (data.checkout_url) {
-        clearCart();
-        window.location.href = data.checkout_url;
-      } else {
-        throw new Error(data.error || "Could not start Chapa payment. Try manual payment.");
-      }
+      clearCart();
+      navigate(`/checkout?status=manual&order=${order.id}`);
     } catch (e) {
       toast({ title: "Checkout failed", description: e.message, variant: "destructive" });
-    } finally {
-      setSubmitting(false);
-    }
+    } finally { setSubmitting(false); }
   };
 
   const urlParams = new URLSearchParams(window.location.search);
   const returnStatus = urlParams.get("status");
   const returnOrder = urlParams.get("order");
 
-  if (returnStatus) {
-    return <OrderConfirmation status={returnStatus} orderId={returnOrder} />;
-  }
+  if (returnStatus) return <OrderConfirmation status={returnStatus} orderId={returnOrder} />;
 
   if (items.length === 0) {
     return (
@@ -230,7 +195,7 @@ export default function Checkout() {
                 </Field>
                 <Field label="Region">
                   <select className={inputCls} value={form.delivery_region} onChange={(e) => set("delivery_region", e.target.value)}>
-                    {REGIONS.map((r) => <option key={r} value={r}>{r}</option>)}
+                    {REGIONS.map((r) => <option key={r} value={r}>{r}{r === "Addis Ababa" ? " (free delivery)" : ""}</option>)}
                   </select>
                 </Field>
                 <Field label="Preferred picker (optional)" className="sm:col-span-2">
@@ -240,14 +205,39 @@ export default function Checkout() {
                   </select>
                 </Field>
               </div>
+              <p className="mt-3 text-xs text-muted-foreground">
+                {form.delivery_region === "Addis Ababa"
+                  ? "Free delivery within Addis Ababa."
+                  : `Delivery fee to ${form.delivery_region}: ${deliveryFee.toLocaleString()} ETB.`}
+              </p>
             </Card>
 
-            {/* Payment */}
+            {/* Manual payment */}
             <Card>
-              <CardTitle icon={<CreditCard className="h-4 w-4" />}>Payment method</CardTitle>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <PaymentOption active={form.payment_method === "chapa"} onClick={() => set("payment_method", "chapa")} title="Chapa" desc="Pay online with Chapa (CBE, Telebirr, cards)" />
-                <PaymentOption active={form.payment_method === "manual"} onClick={() => set("payment_method", "manual")} title="Manual payment" desc="Bank transfer / cash — we confirm manually" />
+              <CardTitle icon={<Building2 className="h-4 w-4" />}>Manual payment</CardTitle>
+              <p className="mb-3 text-sm text-muted-foreground">Transfer the total to one of the accounts below, then upload your payment screenshot. We'll confirm it manually.</p>
+              <div className="space-y-2">
+                {BANK_ACCOUNTS.map((b) => (
+                  <div key={b.name} className="rounded-lg border border-border bg-muted/30 p-3">
+                    <p className="text-sm font-semibold">{b.name}</p>
+                    <p className="text-sm text-muted-foreground">Account: <span className="font-mono font-medium text-foreground">{b.account}</span></p>
+                    <p className="text-xs text-muted-foreground">Holder: {b.holder}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4">
+                <span className="mb-1.5 block text-xs font-medium text-muted-foreground">Payment screenshot *</span>
+                {paymentScreenshot ? (
+                  <div className="flex items-center gap-3">
+                    <div className="h-20 w-32 overflow-hidden rounded-lg border border-border"><Image src={paymentScreenshot} alt="payment" className="h-full w-full object-cover" fittingType="fill" /></div>
+                    <button onClick={() => setPaymentScreenshot("")} className="text-xs text-rose-500 underline">Remove</button>
+                  </div>
+                ) : (
+                  <label className="flex h-20 w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-muted hover:bg-muted/70">
+                    {uploadingScreenshot ? <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /> : <><Upload className="h-5 w-5 text-muted-foreground" /> <span className="text-sm text-muted-foreground">Upload screenshot</span></>}
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files[0] && uploadScreenshot(e.target.files[0])} />
+                  </label>
+                )}
               </div>
             </Card>
           </div>
@@ -259,8 +249,7 @@ export default function Checkout() {
               <div className="space-y-2 text-sm">
                 <Row label="Subtotal" value={`${subtotal.toLocaleString()} ETB`} />
                 {couponDiscount > 0 && <Row label={`Coupon (${couponApplied?.code})`} value={`−${couponDiscount.toLocaleString()} ETB`} />}
-                <Row label="Delivery fee" value={`${deliveryFee.toLocaleString()} ETB`} />
-                <Row label="Picker service fee" value={`${pickerFee.toLocaleString()} ETB`} />
+                <Row label="Delivery fee" value={deliveryFee === 0 ? "Free" : `${deliveryFee.toLocaleString()} ETB`} />
                 <div className="my-2 border-t border-border" />
                 <Row label="Total" value={`${total.toLocaleString()} ETB`} bold />
               </div>
@@ -276,7 +265,7 @@ export default function Checkout() {
               </div>
 
               <button onClick={submit} disabled={submitting} className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:opacity-50">
-                {submitting ? <><Loader2 className="h-4 w-4 animate-spin" /> Placing order…</> : form.payment_method === "chapa" ? "Pay with Chapa" : "Place order"}
+                {submitting ? <><Loader2 className="h-4 w-4 animate-spin" /> Placing order…</> : "Place order"}
               </button>
               <p className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
                 <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" /> Your details are kept private and used only for delivery.
@@ -294,8 +283,6 @@ function OrderConfirmation({ status, orderId }) {
   useEffect(() => {
     if (orderId) base44.entities.Order.get(orderId).then(setOrder).catch(() => setOrder(null));
   }, [orderId]);
-
-  const isPaid = status === "chapa_return";
 
   const downloadOrder = () => {
     if (!order) return;
@@ -317,7 +304,6 @@ function OrderConfirmation({ status, orderId }) {
     doc.setFontSize(11);
     doc.text(`Subtotal: ${Number(order.subtotal).toLocaleString()} ETB`, 14, y); y += 7;
     doc.text(`Delivery fee: ${Number(order.delivery_fee).toLocaleString()} ETB`, 14, y); y += 7;
-    doc.text(`Picker fee: ${Number(order.picker_fee).toLocaleString()} ETB`, 14, y); y += 7;
     if (order.coupon_discount) { doc.text(`Coupon (${order.coupon_code}): -${Number(order.coupon_discount).toLocaleString()} ETB`, 14, y); y += 7; }
     doc.setFontSize(13);
     doc.text(`Total: ${Number(order.total).toLocaleString()} ETB`, 14, y); y += 10;
@@ -325,17 +311,18 @@ function OrderConfirmation({ status, orderId }) {
     doc.text(`Buyer: ${order.buyer_name}`, 14, y); y += 6;
     doc.text(`Phone: ${order.buyer_phone}`, 14, y); y += 6;
     doc.text(`Address: ${order.delivery_address}, ${order.delivery_city || ""}, ${order.delivery_region || ""}`, 14, y); y += 6;
-    doc.text(`Payment: ${order.payment_method} (${order.payment_status})`, 14, y);
+    doc.text(`Payment: manual (${order.payment_status})`, 14, y);
     doc.save(`ethiobridge-order-${String(orderId).slice(-8)}.pdf`);
   };
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-4 text-center">
-      <div className={`flex h-16 w-16 items-center justify-center rounded-full ${isPaid ? "bg-emerald-100" : "bg-amber-100"}`}>
-        <ShieldCheck className={`h-8 w-8 ${isPaid ? "text-emerald-600" : "text-amber-600"}`} />
+      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-100">
+        <ShieldCheck className="h-8 w-8 text-amber-600" />
       </div>
-      <h1 className="mt-5 text-2xl font-semibold">{isPaid ? "Payment submitted!" : "Order placed!"}</h1>
+      <h1 className="mt-5 text-2xl font-semibold">Order placed!</h1>
       <p className="mt-2 max-w-md text-sm text-muted-foreground">
-        {isPaid ? "We're confirming your Chapa payment. You'll be notified once it's verified." : "Your manual payment is pending confirmation. We'll reach out shortly."}
+        Your payment screenshot has been received. We'll confirm it shortly and assign a picker.
       </p>
       {order?.delivery_code && (
         <div className="mt-5 flex flex-col items-center rounded-xl bg-amber-50 border border-amber-200 px-8 py-4">
@@ -364,14 +351,6 @@ function Field({ label, required, children, className }) {
       <span className="mb-1.5 block text-xs font-medium text-muted-foreground">{label}{required && <span className="text-rose-500"> *</span>}</span>
       {children}
     </label>
-  );
-}
-function PaymentOption({ active, onClick, title, desc }) {
-  return (
-    <button onClick={onClick} className={`rounded-xl border p-4 text-left transition ${active ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-muted"}`}>
-      <span className="block text-sm font-semibold">{title}</span>
-      <span className="mt-0.5 block text-xs text-muted-foreground">{desc}</span>
-    </button>
   );
 }
 function Row({ label, value, bold }) {

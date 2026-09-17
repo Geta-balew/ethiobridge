@@ -8,7 +8,7 @@ import { computePrice } from "@/utils/pricing";
 const CATEGORIES = ["Electronics", "Fashion", "Home & Living", "Beauty & Health", "Groceries", "Kids", "Other"];
 const empty = {
   title: "", description: "", price: "", price_aed: "", purchase_price: "", shipping_fee: "", profit_margin: "",
-  discounted_price: "", category: "Electronics",
+  picker_delivery_fee: "", discounted_price: "", category: "Electronics",
   stock: 1, images: [], is_offer: false, is_deal: false, offer_label: "", status: "draft",
 };
 
@@ -52,7 +52,7 @@ export default function ManageItems() {
   const openNew = () => { setEditing("new"); setForm(empty); };
   const openEdit = (item) => {
     setEditing(item.id);
-    setForm({ ...empty, ...item, price: item.price ?? "", price_aed: item.price_aed ?? "", purchase_price: item.purchase_price ?? "", shipping_fee: item.shipping_fee ?? "", profit_margin: item.profit_margin ?? "", discounted_price: item.discounted_price ?? "" });
+    setForm({ ...empty, ...item, price: item.price ?? "", price_aed: item.price_aed ?? "", purchase_price: item.purchase_price ?? "", shipping_fee: item.shipping_fee ?? "", profit_margin: item.profit_margin ?? "", picker_delivery_fee: item.picker_delivery_fee ?? "", discounted_price: item.discounted_price ?? "" });
   };
 
   const save = async () => {
@@ -69,6 +69,7 @@ export default function ManageItems() {
         purchase_price: form.purchase_price ? Number(form.purchase_price) : null,
         shipping_fee: form.shipping_fee ? Number(form.shipping_fee) : 0,
         profit_margin: form.profit_margin ? Number(form.profit_margin) : 0,
+        picker_delivery_fee: form.picker_delivery_fee ? Number(form.picker_delivery_fee) : 0,
         discounted_price: form.discounted_price ? Number(form.discounted_price) : null,
         stock: Number(form.stock) || 0,
       };
@@ -181,8 +182,9 @@ export default function ManageItems() {
                   <L label="Shipping (AED)"><input type="number" className={inp} value={form.shipping_fee} onChange={(e) => set("shipping_fee", e.target.value)} placeholder="0" /></L>
                   <L label="Profit (%)"><input type="number" className={inp} value={form.profit_margin} onChange={(e) => set("profit_margin", e.target.value)} placeholder="0" /></L>
                 </div>
+                <L label="Picker delivery fee (ETB)"><input type="number" className={inp} value={form.picker_delivery_fee} onChange={(e) => set("picker_delivery_fee", e.target.value)} placeholder="0" /></L>
                 <p className="mt-2 text-xs text-amber-800">
-                  Final: <span className="font-semibold">{(() => { const aed = (Number(form.purchase_price) || 0) + (Number(form.shipping_fee) || 0); const m = Number(form.profit_margin) || 0; const f = aed * (1 + m / 100); return f ? `${f.toFixed(2)} AED · ${Math.round(f * (Number(setting?.exchange_rate) || 52)).toLocaleString()} ETB` : "—"; })()}</span>
+                  {(() => { const aed = (Number(form.purchase_price) || 0) + (Number(form.shipping_fee) || 0); const m = Number(form.profit_margin) || 0; const f = aed * (1 + m / 100); const base = f ? Math.round(f * (Number(setting?.exchange_rate) || 52)) : 0; const pf = Number(form.picker_delivery_fee) || 0; return base ? <>Base: <b>{base.toLocaleString()} ETB</b> · Picker fee: <b>{pf.toLocaleString()} ETB</b> · Combined: <b>{(base + pf).toLocaleString()} ETB</b></> : "—"; })()}
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-3">

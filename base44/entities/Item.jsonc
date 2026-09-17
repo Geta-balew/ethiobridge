@@ -38,6 +38,12 @@
       "maximum": 500,
       "default": 0
     },
+    "picker_delivery_fee": {
+      "type": "number",
+      "title": "Picker delivery fee (ETB)",
+      "minimum": 0,
+      "default": 0
+    },
     "discounted_price": {
       "type": "number",
       "title": "Discounted Price (ETB)",

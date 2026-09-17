@@ -92,7 +92,11 @@ export default function BecomePicker() {
             <FL label="Passport number" required><input className={inp} value={form.passport_number} onChange={(e) => set("passport_number", e.target.value)} /></FL>
             <FL label="Ethiopian national ID number" required><input className={inp} value={form.national_id_number} onChange={(e) => set("national_id_number", e.target.value)} /></FL>
             <FL label="Next flight date" required><input type="date" className={inp} value={form.flight_date} onChange={(e) => set("flight_date", e.target.value)} /></FL>
-            <FL label="Previous trips to Dubai" required><input type="number" min="0" className={inp} value={form.previous_trips_count} onChange={(e) => set("previous_trips_count", Number(e.target.value))} /></FL>
+            <FL label="Previous trips to Dubai" required>
+              <select className={inp} value={form.previous_trips_count} onChange={(e) => set("previous_trips_count", Number(e.target.value))}>
+                {Array.from({ length: 21 }, (_, i) => <option key={i} value={i}>{i}</option>)}
+              </select>
+            </FL>
             <FL label="Traveler status (customs risk)" required>
               <select className={inp} value={form.first_time_status} onChange={(e) => set("first_time_status", e.target.value)}>
                 <option value="first_time_traveler">First-time traveler</option>

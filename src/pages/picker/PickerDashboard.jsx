@@ -305,7 +305,10 @@ export default function PickerDashboard() {
                       {requesting === o.id ? (
                         <div className="mt-3 rounded-lg border border-border bg-muted/30 p-3">
                           <label className="mb-1.5 block text-xs font-medium text-muted-foreground">How many flights have you done before to Dubai? *</label>
-                          <input type="number" min="0" className={inp + " mb-3"} value={pickData.trips} onChange={(e) => setPickData((d) => ({ ...d, trips: e.target.value }))} placeholder="e.g. 3" />
+                          <select className={inp + " mb-3"} value={pickData.trips} onChange={(e) => setPickData((d) => ({ ...d, trips: e.target.value }))}>
+                            <option value="">Select…</option>
+                            {Array.from({ length: 21 }, (_, i) => <option key={i} value={String(i)}>{i}</option>)}
+                          </select>
                           <div className="grid gap-3 sm:grid-cols-2">
                             <label className="block">
                               <span className="mb-1.5 block text-xs font-medium text-muted-foreground">Ticket number *</span>
@@ -313,11 +316,21 @@ export default function PickerDashboard() {
                             </label>
                             <label className="block">
                               <span className="mb-1.5 block text-xs font-medium text-muted-foreground">Airline *</span>
-                              <input className={inp} value={pickData.airline} onChange={(e) => setPickData((d) => ({ ...d, airline: e.target.value }))} placeholder="e.g. Emirates" />
+                              <select className={inp} value={pickData.airline} onChange={(e) => setPickData((d) => ({ ...d, airline: e.target.value }))}>
+                                <option value="">Select airline…</option>
+                                <option value="Ethiopian Airlines">Ethiopian Airlines</option>
+                                <option value="Fly Dubai">Fly Dubai</option>
+                                <option value="Emirates">Emirates</option>
+                                <option value="Other">Other</option>
+                              </select>
                             </label>
                             <label className="block sm:col-span-2">
                               <span className="mb-1.5 block text-xs font-medium text-muted-foreground">Addis Ababa arrival location *</span>
-                              <input className={inp} value={pickData.arrival_location} onChange={(e) => setPickData((d) => ({ ...d, arrival_location: e.target.value }))} placeholder="e.g. Bole Airport, Terminal 2" />
+                              <select className={inp} value={pickData.arrival_location} onChange={(e) => setPickData((d) => ({ ...d, arrival_location: e.target.value }))}>
+                                <option value="">Select arrival location…</option>
+                                <option value="Megenagna">Megenagna</option>
+                                <option value="Summit">Summit</option>
+                              </select>
                             </label>
                             <label className="block sm:col-span-2">
                               <span className="mb-1.5 block text-xs font-medium text-muted-foreground">Ticket screenshot *</span>

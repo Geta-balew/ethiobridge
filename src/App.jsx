@@ -11,6 +11,7 @@ import { ThemeProvider } from '@/context/ThemeContext';
 import { LanguageProvider } from '@/context/LanguageContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Home from '@/pages/Home';
+import Layout from '@/components/Layout';
 import ItemDetail from '@/pages/ItemDetail';
 import Checkout from '@/pages/Checkout';
 import Login from '@/pages/Login';
@@ -66,16 +67,20 @@ const AuthenticatedApp = () => {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/" element={<Home />} />
-      <Route path="/item/:id" element={<ItemDetail />} />
-      <Route path="/tickets" element={<Tickets />} />
-      <Route path="/visa" element={<Visa />} />
-      <Route path="/pickers" element={<Pickers />} />
+      <Route element={<Layout />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/item/:id" element={<ItemDetail />} />
+        <Route path="/tickets" element={<Tickets />} />
+        <Route path="/visa" element={<Visa />} />
+        <Route path="/pickers" element={<Pickers />} />
+        <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/orders" element={<MyOrders />} />
+          <Route path="/picker" element={<PickerDashboard />} />
+          <Route path="/picker/register" element={<BecomePicker />} />
+        </Route>
+      </Route>
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/orders" element={<MyOrders />} />
-        <Route path="/picker" element={<PickerDashboard />} />
-        <Route path="/picker/register" element={<BecomePicker />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
           <Route path="items" element={<ManageItems />} />

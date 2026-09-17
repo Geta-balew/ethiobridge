@@ -28,24 +28,6 @@ export default function Tickets() {
 
   const shown = filter === "All" ? tickets : tickets.filter((t) => t.destination === filter);
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const returnStatus = urlParams.get("status");
-
-  if (returnStatus === "chapa_return") {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center px-4 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
-          <Plane className="h-8 w-8 text-emerald-600" />
-        </div>
-        <h1 className="mt-5 text-2xl font-semibold">Payment submitted!</h1>
-        <p className="mt-2 max-w-md text-sm text-muted-foreground">
-          We're confirming your Chapa payment. Our team will contact you to finalize your seat.
-        </p>
-        <Link to="/" className="mt-6 rounded-full bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground">Back to marketplace</Link>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-muted/30 pb-16">
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
@@ -150,7 +132,6 @@ function FlightCard({ ticket, onBook }) {
 
 function BookingModal({ flight, onClose, onDone }) {
   const [form, setForm] = useState({ buyer_name: "", buyer_phone: "", buyer_email: "" });
-  const [paymentMethod, setPaymentMethod] = useState("request");
   const [saving, setSaving] = useState(false);
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -158,7 +139,7 @@ function BookingModal({ flight, onClose, onDone }) {
     if (!form.buyer_name.trim() || !form.buyer_phone.trim()) return;
     setSaving(true);
     try {
-      const booking = await base44.entities.TicketBooking.create({
+      await base44.entities.TicketBooking.create({
         flight_ticket_id: flight.id,
         destination: flight.destination,
         airline: flight.airline,
@@ -167,25 +148,9 @@ function BookingModal({ flight, onClose, onDone }) {
         buyer_name: form.buyer_name,
         buyer_phone: form.buyer_phone,
         buyer_email: form.buyer_email,
-        payment_method: paymentMethod,
+        payment_method: "request",
         status: "pending",
       });
-      if (paymentMethod === "chapa") {
-        const returnUrl = `${window.location.origin}/tickets?status=chapa_return&booking=${booking.id}`;
-        const res = await base44.functions.invoke("initializeTicketPayment", {
-          booking_id: booking.id,
-          amount: flight.price,
-          buyer_email: form.buyer_email,
-          buyer_name: form.buyer_name,
-          return_url: returnUrl,
-        });
-        const data = res.data || res;
-        if (data.checkout_url) {
-          window.location.href = data.checkout_url;
-          return;
-        }
-        throw new Error(data.error || "Could not start payment");
-      }
       onDone();
     } catch (e) {
       setSaving(false);
@@ -215,30 +180,10 @@ function BookingModal({ flight, onClose, onDone }) {
           </label>
         </div>
 
-        <div className="mt-4">
-          <p className="mb-2 text-xs font-medium text-muted-foreground">Payment method</p>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => setPaymentMethod("request")}
-              className={`rounded-lg border p-3 text-left text-sm transition ${paymentMethod === "request" ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-muted"}`}
-            >
-              <span className="block font-medium">Request only</span>
-              <span className="text-xs text-muted-foreground">Agent contacts you</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setPaymentMethod("chapa")}
-              className={`rounded-lg border p-3 text-left text-sm transition ${paymentMethod === "chapa" ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-muted"}`}
-            >
-              <span className="block font-medium">Pay with Chapa</span>
-              <span className="text-xs text-muted-foreground">{flight.price?.toLocaleString()} ETB online</span>
-            </button>
-          </div>
-        </div>
+        <p className="mt-4 rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">An agent will contact you to confirm your seat and arrange payment.</p>
 
         <button onClick={submit} disabled={saving} className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-50">
-          {saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Submitting…</> : paymentMethod === "chapa" ? "Pay with Chapa" : "Request booking"}
+          {saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Submitting…</> : "Request booking"}
         </button>
       </div>
     </div>

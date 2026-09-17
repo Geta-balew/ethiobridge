@@ -21,7 +21,7 @@ export default function Navbar({ onSearch }) {
 
   const submit = (e) => {
     e.preventDefault();
-    onSearch?.(query);
+    navigate(`/?q=${encodeURIComponent(query)}`);
   };
 
   const logout = async () => {

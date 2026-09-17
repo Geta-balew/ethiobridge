@@ -84,7 +84,6 @@
     "payment_method": {
       "type": "string",
       "enum": [
-        "chapa",
         "manual"
       ],
       "title": "Payment Method"
@@ -98,8 +97,12 @@
         "manual_pending",
         "manual_confirmed"
       ],
-      "default": "pending",
+      "default": "manual_pending",
       "title": "Payment Status"
+    },
+    "payment_screenshot": {
+      "type": "string",
+      "title": "Payment Screenshot URL"
     },
     "chapa_tx_ref": {
       "type": "string",

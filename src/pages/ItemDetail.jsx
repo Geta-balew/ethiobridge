@@ -5,7 +5,7 @@ import { Image } from "@/components/ui/image";
 import { useCart } from "@/context/CartContext";
 import { useToast } from "@/components/ui/use-toast";
 import { ShoppingCart, Tag, Zap, ArrowLeft, Loader2, Minus, Plus, ShieldCheck } from "lucide-react";
-import { computePrice, basePrice } from "@/utils/pricing";
+import { computePrice, basePrice, itemPickerFee } from "@/utils/pricing";
 
 export default function ItemDetail() {
   const { id } = useParams();
@@ -57,7 +57,7 @@ export default function ItemDetail() {
   const hasDiscount = final < original;
   const discountPct = hasDiscount ? Math.round(((original - final) / original) * 100) : 0;
   const images = item.images?.length ? item.images : [];
-  const pricedItem = { ...item, price: final, discounted_price: null };
+  const pricedItem = { ...item, price: final, discounted_price: null, picker_fee: itemPickerFee(item) };
 
   const handleAdd = () => {
     addItem(pricedItem, qty);
@@ -128,6 +128,9 @@ export default function ItemDetail() {
                 <span className="text-lg text-muted-foreground line-through">{original.toLocaleString()} ETB</span>
               )}
             </div>
+            {itemPickerFee(item) > 0 && (
+              <p className="mt-1 text-xs text-muted-foreground">Includes {itemPickerFee(item).toLocaleString()} ETB picker delivery fee</p>
+            )}
 
             <div className="mt-3 flex items-center gap-2 text-sm">
               <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 ${

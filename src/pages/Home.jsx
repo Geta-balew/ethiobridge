@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import Navbar from "@/components/marketplace/Navbar";
-import AnnouncementTicker from "@/components/AnnouncementTicker";
+import { useSearchParams } from "react-router-dom";
 import ItemCard from "@/components/marketplace/ItemCard";
 import HeroCarousel from "@/components/marketplace/HeroCarousel";
 import ProductRow from "@/components/marketplace/ProductRow";
@@ -28,7 +27,8 @@ export default function Home() {
   const { t } = useLang();
   const [items, setItems] = useState(null);
   const [category, setCategory] = useState("All");
-  const [query, setQuery] = useState("");
+  const [searchParams] = useSearchParams();
+  const query = searchParams.get("q") || "";
   const [loading, setLoading] = useState(true);
   const [setting, setSetting] = useState(null);
 
@@ -90,9 +90,6 @@ export default function Home() {
           <a href="#deals" className="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-semibold text-[#133827]">{t("shop_now")}</a>
         </div>
       </div>
-
-      <AnnouncementTicker />
-      <Navbar onSearch={setQuery} />
 
       {/* Hero carousel */}
       <section className="mx-auto max-w-7xl px-4 py-5 sm:px-6">
